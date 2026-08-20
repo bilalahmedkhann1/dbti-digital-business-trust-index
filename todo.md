@@ -1,0 +1,19 @@
+# Project TODO
+
+- [x] Define strong DBTI evidence, metric, factor, score, and API-result types.
+- [x] Implement SSRF-safe bounded public website collection for the homepage and up to four key pages.
+- [x] Implement deterministic ten-factor scoring under `lib/scoring/` with explicit missing-data handling and configurable weights.
+- [x] Add the `POST /api/analyze` endpoint and public tRPC analysis contract.
+- [x] Implement server-side Gemini classification, explanation, recommendation, and grounded assistant services with failure fallback.
+- [x] Build the minimal dark DBTI homepage with the required navbar and exact search placeholder.
+- [x] Build the live scan progress experience and ordered analysis results interface.
+- [x] Add accessible factor detail disclosure, real-data visualizations, customer/business-owner views, and floating DBTI Assistant.
+- [x] Harden public-information extraction so contact and social signals come only from visible or explicit business-facing public evidence.
+- [x] Harden public-information extraction so contact and social signals come only from visible or explicit business-facing public evidence.
+- [x] Add comprehensive unit tests for validation, scoring, collection safeguards, and response integrity.
+- [x] Test a real public website, validate responsive rendering, and complete a production build.
+- [x] Write deployment and Gemini configuration documentation.
+- [x] Bound DNS resolution so a stalled lookup cannot exceed the analysis request deadline.
+- [x] Add an overall analysis deadline so secondary page collection cannot keep `/api/analyze` open indefinitely.
+- [x] Add an overall analysis deadline so secondary page collection cannot keep `/api/analyze` open indefinitely.
+- [x] Add an endpoint-level analysis deadline that returns a structured TIMEOUT response if orchestration stalls.

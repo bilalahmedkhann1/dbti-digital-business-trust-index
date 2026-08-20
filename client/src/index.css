@@ -1,4 +1,39 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: #0B0B0B;
+  --color-foreground: #F5F5F5;
+  --color-card: #111111;
+  --color-card-foreground: #F5F5F5;
+  --color-popover: #111111;
+  --color-popover-foreground: #F5F5F5;
+  --color-primary: #F5F5F5;
+  --color-primary-foreground: #0B0B0B;
+  --color-secondary: #262626;
+  --color-secondary-foreground: #F5F5F5;
+  --color-muted: #171717;
+  --color-muted-foreground: #A1A1A1;
+  --color-accent: #262626;
+  --color-accent-foreground: #F5F5F5;
+  --color-border: #262626;
+  --color-input: #262626;
+  --color-ring: #F5F5F5;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { background: #0B0B0B; }
+  body { @apply bg-background text-foreground antialiased; font-family: Arial, Helvetica, sans-serif; }
+  button, a, input, textarea, summary { -webkit-tap-highlight-color: transparent; }
+}
+
+@layer components {
+  .data-label { @apply text-xs tracking-[0.14em] text-[#A1A1A1] uppercase; }
+  .data-value { @apply mt-2 text-sm leading-6 text-[#F5F5F5] break-words; }
+  .link-value { @apply underline underline-offset-4 hover:text-[#A1A1A1]; }
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

@@ -1,4 +1,8 @@
 import { COOKIE_NAME } from "@shared/const";
+import { z } from "zod";
+import { analyzeWebsite } from "./lib/analyze";
+import { answerWithGemini } from "./lib/gemini";
+import type { DBTIResult } from "../shared/dbti";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
@@ -15,6 +19,18 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+  }),
+
+  analysis: router({
+    scan: publicProcedure
+      .input(z.object({ query: z.string().trim().min(1).max(500) }))
+      .mutation(async ({ input }) => analyzeWebsite(input.query)),
+  }),
+
+  ai: router({
+    assist: publicProcedure
+      .input(z.object({ question: z.string().trim().min(1).max(1_000), scan: z.unknown() }))
+      .mutation(async ({ input }) => answerWithGemini(input.question, input.scan as DBTIResult)),
   }),
 
   // TODO: add feature routers here, e.g.
