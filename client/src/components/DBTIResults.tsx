@@ -157,13 +157,14 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
       </section>
 
       <section className="py-12" aria-labelledby="recommendations-title">
-        <SectionTitle index="08" title="AI Recommendations" description="Recommendations only appear when the AI service can validate output against this scan's evidence." />
-        {result.recommendations.length ? <div className="space-y-3">{result.recommendations.map((recommendation) => <article key={recommendation.title} className="border border-[#262626] bg-[#111111] p-5"><p className="text-xs tracking-[0.12em] text-[#A1A1A1]">{recommendation.priority} PRIORITY</p><h3 className="mt-3 text-lg text-[#F5F5F5]">{recommendation.title}</h3><p className="mt-2 text-sm leading-6 text-[#A1A1A1]">{recommendation.reason}</p></article>)}</div> : <p className="text-sm leading-6 text-[#A1A1A1]">AI recommendations are unavailable until a server-side AI provider is configured. Your calculated score and evidence remain available.</p>}
+        <SectionTitle index="08" title="Recommendations" description="AI insights are shown only after evidence validation; otherwise DBTI provides deterministic recommendations tied to observed evidence." />
+        <p className="mb-5 text-sm leading-6 text-[#A1A1A1]" role="status">{result.aiStatusMessage}</p>
+        {result.recommendations.length ? <div className="space-y-3">{result.recommendations.map((recommendation) => <article key={recommendation.title} className="border border-[#262626] bg-[#111111] p-5"><p className="text-xs tracking-[0.12em] text-[#A1A1A1]">{recommendation.priority} PRIORITY</p><h3 className="mt-3 text-lg text-[#F5F5F5]">{recommendation.title}</h3><p className="mt-2 text-sm leading-6 text-[#A1A1A1]">{recommendation.reason}</p><p className="mt-4 text-sm leading-6 text-[#F5F5F5]">{recommendation.suggestedAction}</p></article>)}</div> : <p className="text-sm leading-6 text-[#A1A1A1]">No verified failures or partial signals were available to support a recommendation in this scan.</p>}
       </section>
 
       <section className="py-12" aria-labelledby="assistant-title">
         <SectionTitle index="09" title="DBTI Assistant" description="Open the floating assistant to ask about this specific scan." />
-        <p className="text-sm leading-6 text-[#A1A1A1]">The assistant is constrained to verified evidence from the current scan. When supporting evidence is insufficient, it responds: “I don&apos;t have enough verified data”.</p>
+        <p className="text-sm leading-6 text-[#A1A1A1]">The assistant is constrained to verified evidence from the current scan. {result.aiAvailable ? "Gemini was available for scan-level interpretation." : "Gemini was not available for validated scan-level interpretation; the assistant will not fabricate a response."} When supporting evidence is insufficient, it responds: “I don&apos;t have enough verified data”.</p>
       </section>
       <DBTIAssistant result={result} />
     </main>

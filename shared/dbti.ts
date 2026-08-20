@@ -81,6 +81,8 @@ export type Recommendation = {
   expectedImpact?: string;
 };
 
+export type AiStatus = "AI_VALIDATED" | "NOT_CONFIGURED" | "QUOTA_EXCEEDED" | "UNAVAILABLE" | "NO_GROUNDED_OUTPUT";
+
 export type DBTIResult = {
   business: Business;
   classification: ClassificationResult;
@@ -96,6 +98,8 @@ export type DBTIResult = {
   explanation: string;
   scanTimestamp: string;
   aiAvailable: boolean;
+  aiStatus: AiStatus;
+  aiStatusMessage: string;
 };
 
 export type AnalysisResponse =

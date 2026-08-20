@@ -12,13 +12,18 @@ type DBTIAssistantProps = {
 export function DBTIAssistant({ result }: DBTIAssistantProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const hasVerifiedEvidence = result.evidence.some((item) => item.status === "VERIFIED_PASS" || item.status === "VERIFIED_FAIL" || item.status === "PARTIAL");
   const assistant = trpc.ai.assist.useMutation({
     onSuccess: (answer) => setMessages((current) => [...current, { role: "assistant", content: answer }]),
-    onError: () => setMessages((current) => [...current, { role: "assistant", content: "I don't have enough verified data" }]),
+    onError: () => setMessages((current) => [...current, { role: "assistant", content: hasVerifiedEvidence ? "The assistant could not obtain a grounded AI response for this scan. Review the evidence ledger and try again." : "I don't have enough verified data" }]),
   });
 
   const sendMessage = (content: string) => {
     setMessages((current) => [...current, { role: "user", content }]);
+    if (!hasVerifiedEvidence) {
+      setMessages((current) => [...current, { role: "assistant", content: "I don't have enough verified data" }]);
+      return;
+    }
     assistant.mutate({ question: content, scan: result });
   };
 
@@ -29,7 +34,7 @@ export function DBTIAssistant({ result }: DBTIAssistantProps) {
           <div className="flex items-center justify-between border-b border-[#262626] px-4 py-3">
             <div>
               <p className="text-sm font-medium text-[#F5F5F5]">DBTI Assistant</p>
-              <p className="mt-0.5 text-xs text-[#A1A1A1]">Grounded in this scan&apos;s public evidence</p>
+              <p className="mt-0.5 text-xs text-[#A1A1A1]">{result.aiAvailable ? "Grounded in this scan's public evidence" : result.aiStatus === "QUOTA_EXCEEDED" ? "Gemini quota is currently exhausted" : "Only grounded responses will be shown"}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close DBTI Assistant" className="text-[#A1A1A1] hover:bg-[#171717] hover:text-[#F5F5F5]">
               <X className="size-4" />
@@ -42,7 +47,7 @@ export function DBTIAssistant({ result }: DBTIAssistantProps) {
             onSendMessage={sendMessage}
             isLoading={assistant.isPending}
             placeholder="Ask about this DBTI scan"
-            emptyStateMessage="Ask about this business's verified DBTI evidence."
+            emptyStateMessage={result.aiAvailable ? "Ask about this business's verified DBTI evidence." : result.aiStatus === "QUOTA_EXCEEDED" ? "Gemini API quota is currently exhausted. DBTI will continue to show deterministic evidence and recommendations." : "The scan did not receive validated AI insight. You can still ask a question; DBTI will only answer if it can ground the response in verified evidence."}
             suggestedPrompts={["Why is my score low?", "What should I fix first?", "Explain my security score."]}
           />
         </aside>

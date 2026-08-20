@@ -257,6 +257,8 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     explanation,
     scanTimestamp: now(),
     aiAvailable: false,
+    aiStatus: "NOT_CONFIGURED",
+    aiStatusMessage: "Gemini has not been configured for this project. Evidence-backed deterministic recommendations are shown when available.",
   };
   return enrichWithGemini(deterministicResult);
 }

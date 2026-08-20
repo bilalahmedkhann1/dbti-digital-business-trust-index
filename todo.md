@@ -17,3 +17,7 @@
 - [x] Add an overall analysis deadline so secondary page collection cannot keep `/api/analyze` open indefinitely.
 - [x] Add an overall analysis deadline so secondary page collection cannot keep `/api/analyze` open indefinitely.
 - [x] Add an endpoint-level analysis deadline that returns a structured TIMEOUT response if orchestration stalls.
+- [x] Diagnose why a completed DBTI scan can show AI recommendations as unavailable despite Gemini configuration.
+- [x] Update AI recommendation and assistant unavailable states with actionable, evidence-safe provider guidance.
+- [x] Surface Gemini quota exhaustion distinctly from missing configuration or insufficient scan evidence.
+- [x] Add a regression test for Gemini quota exhaustion and deterministic recommendation fallback.

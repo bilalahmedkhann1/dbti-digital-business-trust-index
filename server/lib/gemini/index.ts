@@ -1,9 +1,15 @@
-import type { ClassificationResult, DBTIResult, Evidence, Recommendation } from "../../../shared/dbti";
+import type { AiStatus, ClassificationResult, DBTIResult, Evidence, Recommendation } from "../../../shared/dbti";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 const NO_DATA_RESPONSE = "I don't have enough verified data";
 
 type JsonRecord = Record<string, unknown>;
+
+class GeminiError extends Error {
+  constructor(public readonly code: "QUOTA_EXCEEDED" | "UNAVAILABLE", message: string) {
+    super(message);
+  }
+}
 
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -27,6 +33,19 @@ function byEvidenceIds(ids: string[], evidence: Evidence[]): Evidence[] {
   return unique;
 }
 
+function deterministicRecommendations(result: DBTIResult): Recommendation[] {
+  return validEvidence(result.evidence)
+    .filter((item) => item.status === "VERIFIED_FAIL" || item.status === "PARTIAL")
+    .slice(0, 4)
+    .map((item) => ({
+      title: `Review ${item.metric}`,
+      priority: item.status === "VERIFIED_FAIL" ? "High" : "Medium",
+      reason: item.description,
+      evidence: item.description,
+      suggestedAction: `Review the observed ${item.metric.toLowerCase()} signal and address it where applicable.`,
+    }));
+}
+
 async function callGeminiJson(instruction: string, payload: string): Promise<JsonRecord> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini is not configured.");
@@ -42,7 +61,11 @@ async function callGeminiJson(instruction: string, payload: string): Promise<Jso
         generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
       }),
     });
-    if (!response.ok) throw new Error(`Gemini returned HTTP ${response.status}`);
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      if (response.status === 429) throw new GeminiError("QUOTA_EXCEEDED", "Gemini API quota is exhausted.");
+      throw new GeminiError("UNAVAILABLE", `Gemini returned HTTP ${response.status}${detail ? `: ${detail.slice(0, 120)}` : ""}`);
+    }
     const body: unknown = await response.json();
     const text = isRecord(body)
       ? (Array.isArray(body.candidates) && isRecord(body.candidates[0]) && isRecord(body.candidates[0].content) && Array.isArray(body.candidates[0].content.parts) && isRecord(body.candidates[0].content.parts[0]) && typeof body.candidates[0].content.parts[0].text === "string" ? body.candidates[0].content.parts[0].text : undefined)
@@ -117,26 +140,50 @@ export async function answerWithGemini(question: string, scan: DBTIResult): Prom
     const cited = byEvidenceIds(strings(response.evidenceIds), available);
     if (!answer || cited.length === 0) return NO_DATA_RESPONSE;
     return answer;
-  } catch {
+  } catch (error) {
+    if (error instanceof GeminiError && error.code === "QUOTA_EXCEEDED") {
+      return "The Gemini API quota is currently exhausted, so I can't provide a grounded AI response for this scan. Review the verified evidence below or try again after quota is available.";
+    }
     return NO_DATA_RESPONSE;
   }
 }
 
 export async function enrichWithGemini(result: DBTIResult): Promise<DBTIResult> {
+  if (!process.env.GEMINI_API_KEY) {
+    return {
+      ...result,
+      recommendations: deterministicRecommendations(result),
+      aiAvailable: false,
+      aiStatus: "NOT_CONFIGURED",
+      aiStatusMessage: "Gemini is not configured. The recommendations below are deterministic and linked to this scan's observed evidence.",
+    };
+  }
   const outcomes = await Promise.allSettled([
     classifyWithGemini(result.classification, result.business, result.publicInformation, result.evidence),
     recommendationsWithGemini(result),
     explanationWithGemini(result),
   ]);
   const classification = outcomes[0].status === "fulfilled" ? outcomes[0].value : result.classification;
-  const recommendations = outcomes[1].status === "fulfilled" ? outcomes[1].value : result.recommendations;
+  const generatedRecommendations = outcomes[1].status === "fulfilled" ? outcomes[1].value : [];
   const explanation = outcomes[2].status === "fulfilled" ? outcomes[2].value : result.explanation;
+  const aiAvailable = classification.provider === "gemini" || generatedRecommendations.length > 0 || explanation !== result.explanation;
+  const quotaExhausted = outcomes.some((outcome) => outcome.status === "rejected" && outcome.reason instanceof GeminiError && outcome.reason.code === "QUOTA_EXCEEDED");
+  const aiStatus: AiStatus = aiAvailable ? "AI_VALIDATED" : quotaExhausted ? "QUOTA_EXCEEDED" : outcomes.some((outcome) => outcome.status === "fulfilled") ? "NO_GROUNDED_OUTPUT" : "UNAVAILABLE";
+  const aiStatusMessage = aiStatus === "AI_VALIDATED"
+    ? "Gemini produced evidence-validated insights for this scan."
+    : aiStatus === "QUOTA_EXCEEDED"
+      ? "Gemini API quota is currently exhausted. Deterministic evidence-backed recommendations are shown instead; restore API quota or wait for it to reset to enable AI insights."
+    : aiStatus === "NO_GROUNDED_OUTPUT"
+      ? "Gemini did not return recommendations that could be validated against this scan. Deterministic evidence-backed recommendations are shown instead."
+      : "Gemini could not be reached for this scan. Deterministic evidence-backed recommendations are shown instead.";
   return {
     ...result,
     classification,
-    recommendations,
+    recommendations: generatedRecommendations.length ? generatedRecommendations : deterministicRecommendations(result),
     explanation,
-    aiAvailable: outcomes.some((outcome) => outcome.status === "fulfilled"),
+    aiAvailable,
+    aiStatus,
+    aiStatusMessage,
   };
 }
 
