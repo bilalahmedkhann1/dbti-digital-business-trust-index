@@ -21,3 +21,5 @@
 - [x] Update AI recommendation and assistant unavailable states with actionable, evidence-safe provider guidance.
 - [x] Surface Gemini quota exhaustion distinctly from missing configuration or insufficient scan evidence.
 - [x] Add a regression test for Gemini quota exhaustion and deterministic recommendation fallback.
+- [x] Apply the supplied near-black, forest, teal, and pale-periwinkle palette across the DBTI interface.
+- [x] Validate updated palette contrast, responsive presentation, and production build.
