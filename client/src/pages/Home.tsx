@@ -64,7 +64,7 @@ export default function Home() {
               <Search className="ml-4 size-5 shrink-0 text-[#0B0B0B]" aria-hidden="true" />
               <label className="sr-only" htmlFor="business-search">Search a business or website</label>
               <Input id="business-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search a business or website" disabled={analysis.isPending} className="h-12 border-0 bg-transparent px-3 text-base text-[#0B0B0B] placeholder:text-[#262626] focus-visible:ring-0" />
-              <Button type="submit" disabled={analysis.isPending} className="size-12 shrink-0 rounded-full bg-[#408175] text-[#0B0909] hover:bg-[#2E4540] hover:text-[#B5B9F0]" aria-label="Analyze website">
+              <Button type="submit" disabled={analysis.isPending} className="size-12 shrink-0 rounded-full bg-[#EC5B38] text-[#524646] hover:bg-[#A8A492] hover:text-[#524646]" aria-label="Analyze website">
                 <ArrowRight className="size-5" />
               </Button>
             </form>

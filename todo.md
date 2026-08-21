@@ -23,3 +23,5 @@
 - [x] Add a regression test for Gemini quota exhaustion and deterministic recommendation fallback.
 - [x] Apply the supplied near-black, forest, teal, and pale-periwinkle palette across the DBTI interface.
 - [x] Validate updated palette contrast, responsive presentation, and production build.
+- [x] Apply the supplied charcoal-brown, stone, cream, and terracotta palette across the DBTI interface.
+- [x] Validate the warm palette contrast, responsive presentation, tests, and production build.
