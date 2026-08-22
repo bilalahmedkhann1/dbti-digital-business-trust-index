@@ -63,8 +63,8 @@ export default function Home() {
             <form onSubmit={submit} className="mt-10 flex w-full max-w-2xl items-center rounded-full border border-[#262626] bg-[#F5F5F5] p-1.5 shadow-[0_18px_50px_rgba(11,11,11,0.72)]">
               <Search className="ml-4 size-5 shrink-0 text-[#0B0B0B]" aria-hidden="true" />
               <label className="sr-only" htmlFor="business-search">Search a business or website</label>
-              <Input id="business-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search a business or website" disabled={analysis.isPending} className="h-12 border-0 bg-transparent px-3 text-base text-[#0B0B0B] placeholder:text-[#262626] focus-visible:ring-0" />
-              <Button type="submit" disabled={analysis.isPending} className="size-12 shrink-0 rounded-full bg-[#EC5B38] text-[#524646] hover:bg-[#A8A492] hover:text-[#524646]" aria-label="Analyze website">
+              <Input id="business-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search a business or website" disabled={analysis.isPending} className="h-12 border-0 !bg-[#FFFFFF] px-3 text-base text-[#0B0B0B] placeholder:text-[#262626] focus-visible:ring-0" />
+              <Button type="submit" disabled={analysis.isPending} className="size-12 shrink-0 rounded-full bg-[#007AFF] text-[#FFFFFF] hover:bg-[#5856D6] hover:text-[#FFFFFF]" aria-label="Analyze website">
                 <ArrowRight className="size-5" />
               </Button>
             </form>
