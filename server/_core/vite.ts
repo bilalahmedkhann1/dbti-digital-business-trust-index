@@ -9,6 +9,8 @@ import viteConfig from "../../vite.config";
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
+    // Keep HMR on the same HTTP server as Express so the managed preview proxy
+    // can use its own browser and local-origin WebSocket routing.
     hmr: { server },
     allowedHosts: true as const,
   };

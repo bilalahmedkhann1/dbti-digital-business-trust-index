@@ -29,3 +29,6 @@
 - [x] Ensure the DBTI search input uses the supplied white surface without inherited translucent tinting.
 - [x] Validate the refreshed palette contrast, responsive presentation, tests, and production build.
 - [x] Add automated palette contrast and responsive-layout contract checks for the refreshed DBTI theme.
+- [x] Diagnose and fix the Vite HMR WebSocket connection failure in the managed DBTI preview.
+- [x] Verify the preview no longer reports Vite WebSocket connection failures.
+- [x] Remove forced HMR client transport settings that prevent local preview WebSocket connections.
