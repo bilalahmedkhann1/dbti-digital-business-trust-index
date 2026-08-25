@@ -32,3 +32,6 @@
 - [x] Diagnose and fix the Vite HMR WebSocket connection failure in the managed DBTI preview.
 - [x] Verify the preview no longer reports Vite WebSocket connection failures.
 - [x] Remove forced HMR client transport settings that prevent local preview WebSocket connections.
+- [x] Diagnose why the DBTI Assistant returns an insufficient-evidence reply for a score-explanation question despite a completed scan.
+- [x] Add a deterministic, evidence-grounded assistant fallback for score-explanation questions when Gemini output is unavailable or invalid.
+- [x] Add regression coverage for the DBTI Assistant score-explanation fallback and insufficient-evidence safeguard.

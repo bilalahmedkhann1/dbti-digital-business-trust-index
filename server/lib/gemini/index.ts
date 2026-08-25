@@ -46,6 +46,34 @@ function deterministicRecommendations(result: DBTIResult): Recommendation[] {
     }));
 }
 
+function isScoreExplanationQuestion(question: string) {
+  return /\b(score|grade|trust|low|why)\b/i.test(question);
+}
+
+function deterministicScoreExplanation(scan: DBTIResult): string | undefined {
+  const supportedFactors = scan.factors
+    .filter((factor) => factor.metrics.some((item) => item.status === "VERIFIED_FAIL" || item.status === "PARTIAL"))
+    .sort((first, second) => first.score - second.score || first.weightedContribution - second.weightedContribution)
+    .slice(0, 3);
+
+  if (supportedFactors.length === 0) return undefined;
+  const findings = supportedFactors.map((factor) => `${factor.name} (${factor.score}/100): ${factor.keyFinding}`).join(" ");
+  return `Your DBTI score is ${scan.dbtiScore}/1000 (${scan.grade}). The scan's lowest evidence-supported factor signals are: ${findings} These conclusions are based on verified or partial evidence collected in this scan.`;
+}
+
+function deterministicAssistantAnswer(question: string, scan: DBTIResult): string | undefined {
+  if (isScoreExplanationQuestion(question)) return deterministicScoreExplanation(scan);
+
+  if (/\b(fix|improve|recommend|first)\b/i.test(question) && scan.recommendations.length > 0) {
+    const recommendations = scan.recommendations.slice(0, 3).map((item) => `${item.title}: ${item.reason}`).join(" ");
+    return `The evidence-supported improvements identified in this scan are: ${recommendations}`;
+  }
+
+  const factor = scan.factors.find((item) => question.toLowerCase().includes(item.name.toLowerCase()) && item.metrics.some((metric) => metric.status === "VERIFIED_PASS" || metric.status === "VERIFIED_FAIL" || metric.status === "PARTIAL"));
+  if (factor) return `${factor.name} scored ${factor.score}/100. ${factor.keyFinding} This summary is based on the scan's verified or partial evidence for that factor.`;
+  return undefined;
+}
+
 async function callGeminiJson(instruction: string, payload: string): Promise<JsonRecord> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini is not configured.");
@@ -131,6 +159,7 @@ export async function explanationWithGemini(result: DBTIResult): Promise<string>
 export async function answerWithGemini(question: string, scan: DBTIResult): Promise<string> {
   const available = validEvidence(scan.evidence);
   if (available.length === 0) return NO_DATA_RESPONSE;
+  const fallback = deterministicAssistantAnswer(question, scan);
   try {
     const response = await callGeminiJson(
       `Answer the user's question using only the supplied DBTI evidence. Return JSON: {answer:string,evidenceIds:string[]}. The answer must explain only directly supported findings and must include at least one evidenceId. If there is insufficient support, return exactly: ${NO_DATA_RESPONSE}`,
@@ -138,9 +167,10 @@ export async function answerWithGemini(question: string, scan: DBTIResult): Prom
     );
     const answer = typeof response.answer === "string" ? response.answer.trim() : "";
     const cited = byEvidenceIds(strings(response.evidenceIds), available);
-    if (!answer || cited.length === 0) return NO_DATA_RESPONSE;
+    if (!answer || cited.length === 0) return fallback ?? NO_DATA_RESPONSE;
     return answer;
   } catch (error) {
+    if (fallback) return fallback;
     if (error instanceof GeminiError && error.code === "QUOTA_EXCEEDED") {
       return "The Gemini API quota is currently exhausted, so I can't provide a grounded AI response for this scan. Review the verified evidence below or try again after quota is available.";
     }
