@@ -107,13 +107,16 @@ export type GooglePublicInformation = {
   searchSuggestionHtml?: string;
 };
 
+export type DBTIScanMode = "WEBSITE_EVIDENCE" | "PUBLIC_SEARCH_ONLY";
+
 export type DBTIResult = {
+  scanMode: DBTIScanMode;
   business: Business;
   classification: ClassificationResult;
   publicInformation: PublicInformation;
   factors: FactorScore[];
-  dbtiScore: number;
-  grade: "A+" | "A" | "B" | "C" | "D" | "F";
+  dbtiScore: number | null;
+  grade: "A+" | "A" | "B" | "C" | "D" | "F" | "UNAVAILABLE";
   trustStatus: string;
   strengths: FactorScore[];
   weaknesses: FactorScore[];

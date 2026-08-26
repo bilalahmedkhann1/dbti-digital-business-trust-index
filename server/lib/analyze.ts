@@ -160,6 +160,46 @@ function getBusinessName(home: CollectedPage): string {
   return schemaName ?? title?.split(/[|—–-]/)[0]?.trim() ?? new URL(home.finalUrl).hostname;
 }
 
+async function analyzeProtectedWebsite(requested: URL): Promise<DBTIResult> {
+  const website = requested.href;
+  const domain = requested.hostname;
+  const business: Business = { name: domain, website, domain };
+  const googlePublicInformation = await searchGooglePublicInformation(business);
+
+  return {
+    scanMode: "PUBLIC_SEARCH_ONLY",
+    business,
+    classification: {
+      industry: "Unable to verify",
+      subcategory: "Unable to verify",
+      confidence: 0,
+      evidence: ["The website refused DBTI server collection, so first-party page content was not analyzed."],
+      provider: "deterministic",
+    },
+    publicInformation: {
+      website,
+      domain,
+      socialLinks: [],
+      policies: [],
+      verificationSignals: [],
+    },
+    factors: [],
+    dbtiScore: null,
+    grade: "UNAVAILABLE",
+    trustStatus: "Website access restricted",
+    strengths: [],
+    weaknesses: [],
+    evidence: [],
+    recommendations: [],
+    explanation: `The website refused automated collection from the DBTI server, so no deterministic 0–1000 score was calculated. DBTI searched public information separately when available; those findings are attributed and do not replace first-party website evidence.`,
+    scanTimestamp: now(),
+    aiAvailable: false,
+    aiStatus: "UNAVAILABLE",
+    aiStatusMessage: "First-party website evidence was unavailable because the site refused automated collection. Public-search findings, when available, are shown separately and do not produce a deterministic score.",
+    googlePublicInformation,
+  };
+}
+
 function policyPage(name: string, pages: CollectedPage[]): CollectedPage | undefined {
   return pages.find((page) => new RegExp(name, "i").test(new URL(page.finalUrl).pathname));
 }
@@ -238,6 +278,7 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     home = await withinCollectionDeadline(fetchPublicHtml(requested));
   } catch (error) {
     if (error instanceof AnalysisInputError) throw error;
+    if (error instanceof CollectionError && error.code === "ACCESS_DENIED") return analyzeProtectedWebsite(requested);
     if (error instanceof CollectionError) throw new AnalysisInputError(error.code, error.message);
     throw new AnalysisInputError("UNAVAILABLE", "The website could not be analyzed during this scan.");
   }
@@ -280,6 +321,7 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
   const explanation = `${name} received ${dbtiScore}/1000 from the observed public evidence available during this scan. The score is deterministic: each factor only uses the collected metrics, and unavailable evidence is marked separately rather than automatically scored as zero.`;
 
   const deterministicResult: DBTIResult = {
+    scanMode: "WEBSITE_EVIDENCE",
     business,
     classification,
     publicInformation: info,

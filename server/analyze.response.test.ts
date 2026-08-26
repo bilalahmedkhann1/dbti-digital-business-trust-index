@@ -25,9 +25,21 @@ vi.mock("./lib/collectors/website", async (importOriginal) => {
 });
 
 vi.mock("./lib/gemini", () => ({ enrichWithGemini: async (result: unknown) => result }));
+vi.mock("./lib/googlePublicInformation", () => ({
+  searchGooglePublicInformation: vi.fn(async () => ({
+    provider: "GOOGLE_SEARCH",
+    status: "AVAILABLE",
+    statusMessage: "Cited public findings available.",
+    summary: "The protected domain has a cited public presence.",
+    citations: [{ id: "source-1", title: "Public source", url: "https://source.example/domain" }],
+    citationSupports: [{ startIndex: 0, endIndex: 10, citationIds: ["source-1"] }],
+  })),
+  unavailableGooglePublicInformation: vi.fn(),
+}));
 
 import { extractLinks, fetchPublicHtml, selectKeyPages } from "./lib/collectors/website";
 import { analyzeWebsite, withinCollectionDeadline } from "./lib/analyze";
+import { CollectionError } from "./lib/collectors/website";
 
 describe("DBTI analysis response integrity", () => {
   beforeEach(() => {
@@ -44,6 +56,20 @@ describe("DBTI analysis response integrity", () => {
     expect(result.evidence.length).toBeGreaterThan(0);
     expect(result.evidence.every((item) => ["VERIFIED_PASS", "VERIFIED_FAIL", "PARTIAL", "UNVERIFIED", "NOT_APPLICABLE"].includes(item.status))).toBe(true);
     expect(result.publicInformation.domain).toBe("example.com");
+  });
+
+  it("returns cited public-search findings without a score when the homepage refuses DBTI collection", async () => {
+    vi.mocked(fetchPublicHtml).mockRejectedValueOnce(new CollectionError("ACCESS_DENIED", "The website refused automated access from the DBTI server during this scan (HTTP 403)."));
+
+    const result = await analyzeWebsite("protected.example");
+
+    expect(result.scanMode).toBe("PUBLIC_SEARCH_ONLY");
+    expect(result.dbtiScore).toBeNull();
+    expect(result.grade).toBe("UNAVAILABLE");
+    expect(result.factors).toHaveLength(0);
+    expect(result.googlePublicInformation.status).toBe("AVAILABLE");
+    expect(result.googlePublicInformation.citations[0]?.url).toBe("https://source.example/domain");
+    expect(result.explanation).toMatch(/no deterministic 0–1000 score was calculated/i);
   });
 
   it("rejects a never-settling collection operation at the configured deadline", async () => {

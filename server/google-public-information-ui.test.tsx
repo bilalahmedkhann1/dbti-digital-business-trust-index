@@ -24,6 +24,7 @@ vi.mock("recharts", () => ({
 import { DBTIResults } from "@/components/DBTIResults";
 
 const result: DBTIResult = {
+  scanMode: "WEBSITE_EVIDENCE",
   business: { name: "Example Company", website: "https://example.com/", domain: "example.com" },
   classification: { industry: "Unable to verify", subcategory: "Unable to verify", confidence: 0, evidence: [], provider: "deterministic" },
   publicInformation: { website: "https://example.com/", domain: "example.com", socialLinks: [], policies: [], verificationSignals: [] },
@@ -65,5 +66,16 @@ describe("Google public-information dashboard", () => {
     expect(screen.getByLabelText("Google Search suggestions").textContent).toContain("Google Search suggestions");
     expect(container.innerHTML).not.toContain("onclick");
     expect(container.innerHTML).not.toContain("<img");
+  });
+
+  it("explains protected-site limits and does not display a fabricated score", () => {
+    render(<DBTIResults result={{ ...result, scanMode: "PUBLIC_SEARCH_ONLY", dbtiScore: null, grade: "UNAVAILABLE", trustStatus: "Website access restricted", googlePublicInformation: { ...result.googlePublicInformation, status: "UNAVAILABLE", statusMessage: "Google Search grounding is unavailable." } }} onNewScan={vi.fn()} />);
+
+    expect(screen.getByText("First-party website evidence unavailable")).toBeTruthy();
+    expect(screen.getByText(/does not calculate a dbti score/i)).toBeTruthy();
+    expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/not calculated/i)).toBeTruthy();
+    expect(screen.getByText(/no deterministic score is shown/i)).toBeTruthy();
+    expect(screen.getByText(/charts are unavailable/i)).toBeTruthy();
   });
 });

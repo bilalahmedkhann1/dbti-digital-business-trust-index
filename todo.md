@@ -46,3 +46,8 @@
 - [x] Extend DBTI evidence and scoring boundaries to distinguish first-party and third-party public evidence.
 - [x] Present attributable Google-derived findings and unavailable-source status in scan results.
 - [x] Add regression coverage and validate the combined website and public-search scan flow.
+- [x] Audit the current HTTP 403 recovery flow and define permitted protected-site evidence paths.
+- [x] Implement a compliant protected-site fallback using public search and/or user-provided evidence without bypassing controls.
+- [x] Keep fallback evidence separate from deterministic website scoring and label its provenance and limits.
+- [x] Add protected-site recovery UX with clear options, validation, and no bypass claims.
+- [x] Add regression and interaction tests, validate the flow, and save a checkpoint.

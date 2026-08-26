@@ -114,6 +114,7 @@ function GroundedSummary({ result }: { result: DBTIResult }) {
 
 function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
   const publicInformation = result.googlePublicInformation;
+  const protectedSite = result.scanMode === "PUBLIC_SEARCH_ONLY";
   const safeSearchSuggestionHtml = publicInformation.searchSuggestionHtml
     ? DOMPurify.sanitize(publicInformation.searchSuggestionHtml, {
       ALLOWED_TAGS: ["a", "div", "span", "p", "ul", "ol", "li", "br", "strong", "em"],
@@ -155,7 +156,7 @@ function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
           ) : null}
         </>
       ) : (
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-[#A1A1A1]">{publicInformation.statusMessage} The website-only evidence and deterministic score remain available.</p>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-[#A1A1A1]">{publicInformation.statusMessage} {protectedSite ? "No deterministic score is shown because first-party website content was not available." : "The website-only evidence and deterministic score remain available."}</p>
       )}
     </article>
   );
@@ -164,6 +165,7 @@ function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
 export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewScan: () => void }) {
   const [view, setView] = useState<ViewMode>("customer");
   const ownerMode = view === "owner";
+  const protectedSite = result.scanMode === "PUBLIC_SEARCH_ONLY";
   const factorData = result.factors.map((factor) => ({ name: factor.name.replace(" ", "\n"), score: factor.score, contribution: factor.weightedContribution }));
 
   return (
@@ -185,6 +187,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
 
       <section className="py-12" aria-labelledby="public-information-title">
         <SectionTitle index="01" title="Public Information" description="Website evidence is shown alongside separately attributed Google public information when source-grounded findings are available." />
+        {protectedSite ? <div className="mb-8 border border-[#5856D6] bg-[#111111] p-5" role="status"><p className="data-label">First-party website evidence unavailable</p><p className="mt-2 max-w-3xl text-sm leading-6 text-[#A1A1A1]">The site refused DBTI server-side collection. This report uses public-search findings only where Google Search grounding returned cited sources; it does not claim to have scanned the protected website and does not calculate a DBTI score.</p></div> : null}
         <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
           <div><p className="data-label">Website</p><a href={result.publicInformation.website} className="data-value link-value" target="_blank" rel="noreferrer">{result.publicInformation.website}</a></div>
           <div><p className="data-label">Industry</p><p className="data-value">{result.classification.industry}</p><p className="mt-1 text-xs text-[#A1A1A1]">{result.classification.confidence ? `${result.classification.confidence}% classification confidence` : "Insufficient public data"}</p></div>
@@ -196,14 +199,14 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
       </section>
 
       <section className="py-12" aria-labelledby="score-title">
-        <SectionTitle index="02" title="DBTI Score" description="A reproducible weighted calculation based on the observed evidence." />
+        <SectionTitle index="02" title="DBTI Score" description={protectedSite ? "A numerical score requires collected first-party website evidence." : "A reproducible weighted calculation based on the observed evidence."} />
         <div className="grid items-end gap-8 lg:grid-cols-[1fr_1.1fr]">
           <div className="border-l border-[#F5F5F5] pl-6">
-            <p className="text-7xl font-medium leading-none tracking-[-0.08em] text-[#F5F5F5] sm:text-8xl">{result.dbtiScore}</p>
-            <p className="mt-3 text-sm text-[#A1A1A1]">out of 1000</p>
+            <p className="text-7xl font-medium leading-none tracking-[-0.08em] text-[#F5F5F5] sm:text-8xl">{result.dbtiScore ?? "—"}</p>
+            <p className="mt-3 text-sm text-[#A1A1A1]">{protectedSite ? "not calculated" : "out of 1000"}</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            <div><p className="data-label">Grade</p><p className="mt-2 text-3xl font-medium text-[#F5F5F5]">{result.grade}</p></div>
+            <div><p className="data-label">Grade</p><p className="mt-2 text-3xl font-medium text-[#F5F5F5]">{result.grade === "UNAVAILABLE" ? "—" : result.grade}</p></div>
             <div><p className="data-label">Trust status</p><p className="mt-2 text-lg text-[#F5F5F5]">{result.trustStatus}</p></div>
             <div><p className="data-label">Scanned</p><p className="mt-2 text-sm leading-6 text-[#F5F5F5]">{new Date(result.scanTimestamp).toLocaleString()}</p></div>
           </div>
@@ -213,15 +216,15 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
 
       <section className="py-12" aria-labelledby="breakdown-title">
         <SectionTitle index="03" title="Score Breakdown" description="Expand a factor to see its collected evidence and its deterministic contribution." />
-        <div>{result.factors.map((factor) => <FactorDetail key={factor.key} factor={factor} ownerMode={ownerMode} />)}</div>
+        {result.factors.length ? <div>{result.factors.map((factor) => <FactorDetail key={factor.key} factor={factor} ownerMode={ownerMode} />)}</div> : <p className="text-sm leading-6 text-[#A1A1A1]">No factor scores were calculated because first-party website evidence was unavailable.</p>}
       </section>
 
       <section className="py-12" aria-labelledby="charts-title">
         <SectionTitle index="04" title="Interactive Charts" description="Visualizations are calculated directly from this scan's factor scores." />
-        <div className="grid gap-6 lg:grid-cols-2">
+        {factorData.length ? <div className="grid gap-6 lg:grid-cols-2">
           <div className="h-[320px] border border-[#262626] bg-[#111111] p-4"><p className="data-label">Factor radar</p><ResponsiveContainer width="100%" height="92%"><RadarChart data={factorData}><PolarGrid stroke="#5856D6" /><PolarAngleAxis dataKey="name" tick={{ fill: "#FFFFFF", fontSize: 10 }} /><PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} /><Radar dataKey="score" stroke="#FFFFFF" fill="#007AFF" fillOpacity={0.42} /></RadarChart></ResponsiveContainer></div>
           <div className="h-[320px] border border-[#262626] bg-[#111111] p-4"><p className="data-label">Weighted contribution</p><ResponsiveContainer width="100%" height="92%"><BarChart data={factorData} margin={{ top: 16, right: 4, bottom: 0, left: -24 }}><CartesianGrid stroke="#5856D6" vertical={false} /><XAxis dataKey="name" tick={{ fill: "#FFFFFF", fontSize: 10 }} tickLine={false} axisLine={false} interval={0} /><YAxis tick={{ fill: "#FFFFFF", fontSize: 10 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={{ background: "#1C1C1E", border: "1px solid #5856D6", color: "#FFFFFF" }} cursor={{ fill: "#1C1C1E" }} /><Bar dataKey="contribution" radius={0}>{factorData.map((factor) => <Cell key={factor.name} fill="#34C759" />)}</Bar></BarChart></ResponsiveContainer></div>
-        </div>
+        </div> : <p className="text-sm leading-6 text-[#A1A1A1]">Charts are unavailable until first-party website evidence can be collected.</p>}
       </section>
 
       <section className="py-12" aria-labelledby="evidence-title">
