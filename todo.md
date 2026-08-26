@@ -38,3 +38,6 @@
 - [x] Diagnose Tesla official-site access denial during DBTI collection and report it accurately as a collection restriction when applicable.
 - [x] Diagnose and improve Honda Atlas visible-contact extraction across collected public pages.
 - [x] Add collection regression coverage for access-denied classification and contact-page evidence extraction.
+- [x] Identify compliant public recovery paths for websites that refuse DBTI server-side collection.
+- [x] Add a clear blocked-site recovery experience with a permitted public-page retry path.
+- [x] Test blocked-site recovery messaging and targeted-page validation safeguards.
