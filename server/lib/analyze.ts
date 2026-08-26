@@ -2,6 +2,7 @@ import { calculateDbtiScore, calculateFactorScores, scoreBand } from "../../lib/
 import type { Business, ClassificationResult, DBTIResult, Evidence, FactorKey, MetricStatus, PublicInformation } from "../../shared/dbti";
 import { CollectionError, extractLinks, fetchPublicHtml, normalizePublicUrl, selectKeyPages, type CollectedPage } from "./collectors/website";
 import { enrichWithGemini } from "./gemini";
+import { searchGooglePublicInformation, unavailableGooglePublicInformation } from "./googlePublicInformation";
 
 export class AnalysisInputError extends Error {
   constructor(public readonly code: string, message: string) {
@@ -295,6 +296,11 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     aiAvailable: false,
     aiStatus: "NOT_CONFIGURED",
     aiStatusMessage: "Gemini has not been configured for this project. Evidence-backed deterministic recommendations are shown when available.",
+    googlePublicInformation: unavailableGooglePublicInformation("NOT_CONFIGURED", "Google public-information search has not been requested for this scan."),
   };
-  return enrichWithGemini(deterministicResult);
+  const [enriched, googlePublicInformation] = await Promise.all([
+    enrichWithGemini(deterministicResult),
+    searchGooglePublicInformation(business),
+  ]);
+  return { ...enriched, googlePublicInformation };
 }

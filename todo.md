@@ -41,3 +41,8 @@
 - [x] Identify compliant public recovery paths for websites that refuse DBTI server-side collection.
 - [x] Add a clear blocked-site recovery experience with a permitted public-page retry path.
 - [x] Test blocked-site recovery messaging and targeted-page validation safeguards.
+- [x] Define bounded, attributable Google public-information evidence rules for DBTI scans.
+- [x] Integrate a server-side Google public-search source without exposing credentials to the browser.
+- [x] Extend DBTI evidence and scoring boundaries to distinguish first-party and third-party public evidence.
+- [x] Present attributable Google-derived findings and unavailable-source status in scan results.
+- [x] Add regression coverage and validate the combined website and public-search scan flow.

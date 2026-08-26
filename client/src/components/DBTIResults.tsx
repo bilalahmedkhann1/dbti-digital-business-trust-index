@@ -2,8 +2,9 @@ import { DBTIAssistant } from "@/components/DBTIAssistant";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DBTIResult, Evidence, FactorScore } from "@shared/dbti";
+import DOMPurify from "dompurify";
 import { ChevronDown, ExternalLink, ShieldAlert, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, PolarAngleAxis, PolarGrid, PolarRadiusAxis } from "recharts";
 
 type ViewMode = "customer" | "owner";
@@ -79,6 +80,87 @@ function EvidenceRow({ evidence }: { evidence: Evidence }) {
   );
 }
 
+function GroundedSummary({ result }: { result: DBTIResult }) {
+  const publicInformation = result.googlePublicInformation;
+  const summary = publicInformation.summary ?? "";
+  const citationById = new Map(publicInformation.citations.map((citation, index) => [citation.id, { ...citation, position: index + 1 }]));
+  const supports = [...publicInformation.citationSupports]
+    .sort((first, second) => first.startIndex - second.startIndex || first.endIndex - second.endIndex)
+    .filter((support, index, list) => support.startIndex >= (index === 0 ? 0 : list[index - 1].endIndex));
+  let cursor = 0;
+
+  return (
+    <p className="mt-4 max-w-4xl whitespace-pre-line text-sm leading-7 text-[#A1A1A1]">
+      {supports.flatMap((support, index) => {
+        const leadingText = summary.slice(cursor, support.startIndex);
+        const supportedText = summary.slice(support.startIndex, support.endIndex);
+        cursor = support.endIndex;
+        const references = support.citationIds.flatMap((id) => {
+          const citation = citationById.get(id);
+          return citation ? [citation] : [];
+        });
+        return [
+          leadingText ? <span key={`text-${index}`}>{leadingText}</span> : null,
+          <span key={`support-${index}`}>
+            {supportedText}
+            {references.length ? <sup className="ml-1 whitespace-nowrap">{references.map((citation, referenceIndex) => <a key={citation.id} href={citation.url} target="_blank" rel="noreferrer" aria-label={`Citation ${citation.position}: ${citation.title}`} className="text-[#007AFF] underline-offset-2 hover:underline">[{citation.position}{referenceIndex < references.length - 1 ? "," : ""}]</a>)}</sup> : null}
+          </span>,
+        ];
+      })}
+      {cursor < summary.length ? <span>{summary.slice(cursor)}</span> : null}
+    </p>
+  );
+}
+
+function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
+  const publicInformation = result.googlePublicInformation;
+  const safeSearchSuggestionHtml = publicInformation.searchSuggestionHtml
+    ? DOMPurify.sanitize(publicInformation.searchSuggestionHtml, {
+      ALLOWED_TAGS: ["a", "div", "span", "p", "ul", "ol", "li", "br", "strong", "em"],
+      ALLOWED_ATTR: ["href", "class", "aria-label", "role"],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+    })
+    : undefined;
+
+  return (
+    <article className="mt-8 border border-[#262626] bg-[#111111] p-5" aria-labelledby="google-public-information-title">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="data-label">Google public information</p>
+          <h3 id="google-public-information-title" className="mt-2 text-lg font-medium text-[#F5F5F5]">Public web findings</h3>
+        </div>
+        <Badge variant="outline" className="w-fit border-[#5856D6] bg-transparent text-xs font-normal text-[#F5F5F5]">
+          {publicInformation.status === "AVAILABLE" ? "Google Search-grounded" : "Unavailable"}
+        </Badge>
+      </div>
+
+      {publicInformation.status === "AVAILABLE" && publicInformation.summary ? (
+        <>
+          <GroundedSummary result={result} />
+          <p className="mt-4 text-xs leading-5 text-[#A1A1A1]">This source-cited public-information supplement does not affect the deterministic DBTI score.</p>
+          <div className="mt-5 border-t border-[#262626] pt-4">
+            <p className="data-label">Sources cited by Google Search</p>
+            <ul className="mt-3 space-y-2">
+              {publicInformation.citations.map((citation) => (
+                <li key={citation.id}>
+                  <a href={citation.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-[#F5F5F5] underline-offset-4 hover:text-[#007AFF] hover:underline">
+                    {citation.title} <ExternalLink className="size-3" aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {safeSearchSuggestionHtml ? (
+            <div className="google-search-suggestions mt-5 border-t border-[#262626] pt-4 text-sm text-[#A1A1A1]" aria-label="Google Search suggestions" dangerouslySetInnerHTML={{ __html: safeSearchSuggestionHtml }} />
+          ) : null}
+        </>
+      ) : (
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-[#A1A1A1]">{publicInformation.statusMessage} The website-only evidence and deterministic score remain available.</p>
+      )}
+    </article>
+  );
+}
+
 export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewScan: () => void }) {
   const [view, setView] = useState<ViewMode>("customer");
   const ownerMode = view === "owner";
@@ -102,7 +184,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
       </div>
 
       <section className="py-12" aria-labelledby="public-information-title">
-        <SectionTitle index="01" title="Public Information" description="Only information collected from the scanned public pages is shown." />
+        <SectionTitle index="01" title="Public Information" description="Website evidence is shown alongside separately attributed Google public information when source-grounded findings are available." />
         <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
           <div><p className="data-label">Website</p><a href={result.publicInformation.website} className="data-value link-value" target="_blank" rel="noreferrer">{result.publicInformation.website}</a></div>
           <div><p className="data-label">Industry</p><p className="data-value">{result.classification.industry}</p><p className="mt-1 text-xs text-[#A1A1A1]">{result.classification.confidence ? `${result.classification.confidence}% classification confidence` : "Insufficient public data"}</p></div>
@@ -110,6 +192,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
           <div><p className="data-label">Verification signals</p><p className="data-value">{result.publicInformation.verificationSignals.length ? result.publicInformation.verificationSignals.join(", ") : "Unable to verify"}</p></div>
           {result.publicInformation.description ? <div className="md:col-span-2"><p className="data-label">Description</p><p className="max-w-3xl text-sm leading-7 text-[#A1A1A1]">{result.publicInformation.description}</p></div> : null}
         </div>
+        <GooglePublicInformationCard result={result} />
       </section>
 
       <section className="py-12" aria-labelledby="score-title">

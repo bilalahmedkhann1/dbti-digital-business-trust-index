@@ -83,6 +83,30 @@ export type Recommendation = {
 
 export type AiStatus = "AI_VALIDATED" | "NOT_CONFIGURED" | "QUOTA_EXCEEDED" | "UNAVAILABLE" | "NO_GROUNDED_OUTPUT";
 
+export type GooglePublicInformationStatus = "AVAILABLE" | "NOT_CONFIGURED" | "QUOTA_EXCEEDED" | "UNAVAILABLE" | "NO_GROUNDED_OUTPUT";
+
+export type GooglePublicCitation = {
+  id: string;
+  title: string;
+  url: string;
+};
+
+export type GooglePublicCitationSupport = {
+  startIndex: number;
+  endIndex: number;
+  citationIds: string[];
+};
+
+export type GooglePublicInformation = {
+  provider: "GOOGLE_SEARCH";
+  status: GooglePublicInformationStatus;
+  statusMessage: string;
+  summary?: string;
+  citations: GooglePublicCitation[];
+  citationSupports: GooglePublicCitationSupport[];
+  searchSuggestionHtml?: string;
+};
+
 export type DBTIResult = {
   business: Business;
   classification: ClassificationResult;
@@ -100,6 +124,7 @@ export type DBTIResult = {
   aiAvailable: boolean;
   aiStatus: AiStatus;
   aiStatusMessage: string;
+  googlePublicInformation: GooglePublicInformation;
 };
 
 export type AnalysisResponse =
