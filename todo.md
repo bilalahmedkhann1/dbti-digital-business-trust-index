@@ -51,3 +51,13 @@
 - [x] Keep fallback evidence separate from deterministic website scoring and label its provenance and limits.
 - [x] Add protected-site recovery UX with clear options, validation, and no bypass claims.
 - [x] Add regression and interaction tests, validate the flow, and save a checkpoint.
+- [x] Diagnose the protected-site fallback returning no usable findings when Gemini Search grounding is unavailable or quota-exhausted.
+- [x] Evaluate an independent public-search fallback and document that paid Google Custom Search credentials are not required.
+- [x] Add a user-assisted evidence path for pages that are accessible in the user's browser but blocked to DBTI's server.
+- [x] Make protected-site results actionable without presenting an unsupported deterministic score.
+- [x] Add regression and interaction tests for provider fallback, assisted evidence, and normal scans.
+- [x] Remove the optional paid Google Custom Search fallback and document that it is not required.
+- [x] Add a free user-assisted public evidence intake for protected sites with URL and content validation.
+- [x] Run deterministic analysis only on validated user-provided evidence and label its provenance.
+- [x] Add protected-site paste-evidence UX and safe empty/error states.
+- [x] Add tests, validate the assisted flow, and save a checkpoint.

@@ -107,7 +107,13 @@ export type GooglePublicInformation = {
   searchSuggestionHtml?: string;
 };
 
-export type DBTIScanMode = "WEBSITE_EVIDENCE" | "PUBLIC_SEARCH_ONLY";
+export type DBTIScanMode = "WEBSITE_EVIDENCE" | "PUBLIC_SEARCH_ONLY" | "ASSISTED_EVIDENCE";
+
+export type UserProvidedEvidence = {
+  sourceUrl: string;
+  characterCount: number;
+  submittedAt: string;
+};
 
 export type DBTIResult = {
   scanMode: DBTIScanMode;
@@ -128,6 +134,7 @@ export type DBTIResult = {
   aiStatus: AiStatus;
   aiStatusMessage: string;
   googlePublicInformation: GooglePublicInformation;
+  userProvidedEvidence?: UserProvidedEvidence;
 };
 
 export type AnalysisResponse =

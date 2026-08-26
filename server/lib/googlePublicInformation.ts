@@ -84,8 +84,8 @@ function parseGooglePublicInformation(body: unknown): GooglePublicInformation {
   const searchSuggestionHtml = typeof renderedContent === "string" && renderedContent.trim() && renderedContent.length <= MAX_SEARCH_SUGGESTION_HTML_LENGTH
     ? renderedContent
     : undefined;
-  if (citations.length === 0 || citationSupports.length === 0 || !searchSuggestionHtml) {
-    return unavailableGooglePublicInformation("NO_GROUNDED_OUTPUT", "Google Search did not return the citations and associated search suggestions required to display public-information findings.");
+  if (citations.length === 0 || citationSupports.length === 0) {
+    return unavailableGooglePublicInformation("NO_GROUNDED_OUTPUT", "Google Search did not return usable cited public-information findings for this scan.");
   }
 
   return {

@@ -26,6 +26,10 @@ export async function withinCollectionDeadline<T>(operation: Promise<T>, timeout
   }
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function stripHtml(value: string): string {
   return value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -264,7 +268,7 @@ function buildEvidence(home: CollectedPage, pages: CollectedPage[], contactColle
   ];
 }
 
-export async function analyzeWebsite(query: string): Promise<DBTIResult> {
+export async function analyzeWebsite(query: string, providedContent?: string): Promise<DBTIResult> {
   let requested: URL;
   try {
     requested = normalizePublicUrl(query);
@@ -273,18 +277,27 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     throw error;
   }
 
-  let home: CollectedPage;
-  try {
-    home = await withinCollectionDeadline(fetchPublicHtml(requested));
-  } catch (error) {
-    if (error instanceof AnalysisInputError) throw error;
-    if (error instanceof CollectionError && error.code === "ACCESS_DENIED") return analyzeProtectedWebsite(requested);
-    if (error instanceof CollectionError) throw new AnalysisInputError(error.code, error.message);
-    throw new AnalysisInputError("UNAVAILABLE", "The website could not be analyzed during this scan.");
+  const assistedContent = providedContent?.trim();
+  if (assistedContent !== undefined && (assistedContent.length < 80 || assistedContent.length > 100_000)) {
+    throw new AnalysisInputError("INVALID_EVIDENCE", "Paste at least 80 and no more than 100,000 characters of publicly visible page text.");
   }
 
-  const links = extractLinks(home.html, home.finalUrl);
-  const keyPages = selectKeyPages(home.finalUrl, links);
+  let home: CollectedPage;
+  if (assistedContent !== undefined) {
+    home = { requestedUrl: requested.href, finalUrl: requested.href, status: 200, headers: { "x-dbti-evidence-source": "user-provided" }, html: `<html><head><title>${escapeHtml(requested.hostname)}</title></head><body><main><p>${escapeHtml(assistedContent).replace(/\n/g, "</p><p>")}</p></main></body></html>`, elapsedMs: 0 };
+  } else {
+    try {
+      home = await withinCollectionDeadline(fetchPublicHtml(requested));
+    } catch (error) {
+      if (error instanceof AnalysisInputError) throw error;
+      if (error instanceof CollectionError && error.code === "ACCESS_DENIED") return analyzeProtectedWebsite(requested);
+      if (error instanceof CollectionError) throw new AnalysisInputError(error.code, error.message);
+      throw new AnalysisInputError("UNAVAILABLE", "The website could not be analyzed during this scan.");
+    }
+  }
+
+  const links = assistedContent !== undefined ? [] : extractLinks(home.html, home.finalUrl);
+  const keyPages = assistedContent !== undefined ? [] : selectKeyPages(home.finalUrl, links);
   let collected: PromiseSettledResult<CollectedPage>[];
   try {
     collected = await withinCollectionDeadline(Promise.allSettled(keyPages.map((url) => fetchPublicHtml(url))));
@@ -321,7 +334,7 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
   const explanation = `${name} received ${dbtiScore}/1000 from the observed public evidence available during this scan. The score is deterministic: each factor only uses the collected metrics, and unavailable evidence is marked separately rather than automatically scored as zero.`;
 
   const deterministicResult: DBTIResult = {
-    scanMode: "WEBSITE_EVIDENCE",
+    scanMode: assistedContent !== undefined ? "ASSISTED_EVIDENCE" : "WEBSITE_EVIDENCE",
     business,
     classification,
     publicInformation: info,
@@ -339,6 +352,7 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     aiStatus: "NOT_CONFIGURED",
     aiStatusMessage: "Gemini has not been configured for this project. Evidence-backed deterministic recommendations are shown when available.",
     googlePublicInformation: unavailableGooglePublicInformation("NOT_CONFIGURED", "Google public-information search has not been requested for this scan."),
+    ...(assistedContent !== undefined ? { userProvidedEvidence: { sourceUrl: requested.href, characterCount: assistedContent.length, submittedAt: now() } } : {}),
   };
   const [enriched, googlePublicInformation] = await Promise.all([
     enrichWithGemini(deterministicResult),

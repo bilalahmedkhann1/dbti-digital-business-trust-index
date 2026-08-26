@@ -25,6 +25,9 @@ export const appRouter = router({
     scan: publicProcedure
       .input(z.object({ query: z.string().trim().min(1).max(500) }))
       .mutation(async ({ input }) => analyzeWebsite(input.query)),
+    assistedScan: publicProcedure
+      .input(z.object({ query: z.string().trim().min(1).max(500), content: z.string().trim().min(80).max(100_000) }))
+      .mutation(async ({ input }) => analyzeWebsite(input.query, input.content)),
   }),
 
   ai: router({

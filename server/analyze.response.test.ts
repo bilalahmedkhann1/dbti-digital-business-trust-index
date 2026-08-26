@@ -72,6 +72,15 @@ describe("DBTI analysis response integrity", () => {
     expect(result.explanation).toMatch(/no deterministic 0–1000 score was calculated/i);
   });
 
+  it("analyzes pasted visible evidence without claiming server collection", async () => {
+    const result = await analyzeWebsite("https://protected.example", "Protected Example is a public business providing products and customer support. Contact us at hello@protected.example or call +1 555 010 1234. This visible page text was copied by the user from the site in a normal browser.");
+    expect(result.scanMode).toBe("ASSISTED_EVIDENCE");
+    expect(result.dbtiScore).toEqual(expect.any(Number));
+    expect(result.userProvidedEvidence).toMatchObject({ sourceUrl: "https://protected.example/", characterCount: expect.any(Number) });
+    expect(result.evidence.every((item) => new URL(item.source).hostname === "protected.example")).toBe(true);
+    expect(fetchPublicHtml).not.toHaveBeenCalled();
+  });
+
   it("rejects a never-settling collection operation at the configured deadline", async () => {
     await expect(withinCollectionDeadline(new Promise<never>(() => undefined), 5)).rejects.toMatchObject({ code: "TIMEOUT" });
   });

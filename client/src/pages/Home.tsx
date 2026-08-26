@@ -2,6 +2,7 @@ import { AnalysisProgress } from "@/components/AnalysisProgress";
 import { DBTIResults } from "@/components/DBTIResults";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ACCESS_RESTRICTION_MESSAGE, isAccessRestrictionMessage } from "@/lib/collectionStatus";
 import { trpc } from "@/lib/trpc";
 import type { DBTIResult } from "@shared/dbti";
@@ -18,6 +19,8 @@ export default function Home() {
   const [result, setResult] = useState<DBTIResult | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [accessRestricted, setAccessRestricted] = useState(false);
+  const [assistedContent, setAssistedContent] = useState("");
+  const [assistedError, setAssistedError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [location] = useLocation();
   useEffect(() => {
@@ -26,6 +29,17 @@ export default function Home() {
       setAccessRestricted(true);
     }
   }, []);
+  const assistedAnalysis = trpc.analysis.assistedScan.useMutation({
+    onSuccess: (data) => {
+      setResult(data);
+      setMessage(null);
+      setAccessRestricted(false);
+      setAssistedContent("");
+      setAssistedError(null);
+      window.setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    },
+    onError: (error) => { setAssistedError(error.message); setMessage(error.message); },
+  });
   const analysis = trpc.analysis.scan.useMutation({
     onSuccess: (data) => {
       setResult(data);
@@ -92,6 +106,13 @@ export default function Home() {
                     <p id="access-restriction-title" className="text-sm font-medium text-[#F5F5F5]">This website blocks server-side scanning</p>
                     <p className="mt-2 text-sm leading-6 text-[#A1A1A1]">DBTI received an HTTP 403 response from this website. The site may work normally in your browser, but its owner has chosen not to allow automated collection from this server. DBTI will not bypass that control.</p>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <div className="w-full">
+                        <label htmlFor="assisted-evidence" className="text-xs font-medium text-[#F5F5F5]">Paste visible public page text (free fallback)</label>
+                        <Textarea id="assisted-evidence" value={assistedContent} onChange={(event) => { setAssistedContent(event.target.value); setAssistedError(null); }} placeholder="Open the page in your browser, copy its visible text, and paste it here…" className="mt-2 min-h-28 border-[#262626] bg-[#0B0B0B] text-[#F5F5F5] placeholder:text-[#777777]" disabled={assistedAnalysis.isPending} aria-describedby="assisted-evidence-help" />
+                        <p id="assisted-evidence-help" className="mt-2 text-xs leading-5 text-[#A1A1A1]">Use at least 80 characters of visible, public page text. Do not paste passwords, private account data, or personal information.</p>
+                        {assistedError ? <p className="mt-2 text-sm leading-5 text-[#F5F5F5]" role="alert">{assistedError}</p> : null}
+                        <Button type="button" disabled={assistedAnalysis.isPending || assistedContent.trim().length < 80} onClick={() => assistedAnalysis.mutate({ query, content: assistedContent })} className="mt-3 bg-[#34C759] text-[#1C1C1E] hover:bg-[#007AFF] hover:text-[#FFFFFF]">Analyze pasted evidence</Button>
+                      </div>
                       <Button type="button" variant="outline" onClick={() => { setAccessRestricted(false); setMessage("Paste a different publicly accessible page from this website, such as an About, Contact, or product page, then scan it."); inputRef.current?.focus(); }} className="border-[#262626] text-[#F5F5F5] hover:bg-[#171717] hover:text-[#F5F5F5]">
                         Try a public page <ExternalLink className="ml-2 size-3.5" aria-hidden="true" />
                       </Button>

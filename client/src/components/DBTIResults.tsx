@@ -115,6 +115,7 @@ function GroundedSummary({ result }: { result: DBTIResult }) {
 function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
   const publicInformation = result.googlePublicInformation;
   const protectedSite = result.scanMode === "PUBLIC_SEARCH_ONLY";
+  const assistedSite = result.scanMode === "ASSISTED_EVIDENCE";
   const safeSearchSuggestionHtml = publicInformation.searchSuggestionHtml
     ? DOMPurify.sanitize(publicInformation.searchSuggestionHtml, {
       ALLOWED_TAGS: ["a", "div", "span", "p", "ul", "ol", "li", "br", "strong", "em"],
@@ -166,6 +167,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
   const [view, setView] = useState<ViewMode>("customer");
   const ownerMode = view === "owner";
   const protectedSite = result.scanMode === "PUBLIC_SEARCH_ONLY";
+  const assistedSite = result.scanMode === "ASSISTED_EVIDENCE";
   const factorData = result.factors.map((factor) => ({ name: factor.name.replace(" ", "\n"), score: factor.score, contribution: factor.weightedContribution }));
 
   return (
@@ -188,6 +190,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
       <section className="py-12" aria-labelledby="public-information-title">
         <SectionTitle index="01" title="Public Information" description="Website evidence is shown alongside separately attributed Google public information when source-grounded findings are available." />
         {protectedSite ? <div className="mb-8 border border-[#5856D6] bg-[#111111] p-5" role="status"><p className="data-label">First-party website evidence unavailable</p><p className="mt-2 max-w-3xl text-sm leading-6 text-[#A1A1A1]">The site refused DBTI server-side collection. This report uses public-search findings only where Google Search grounding returned cited sources; it does not claim to have scanned the protected website and does not calculate a DBTI score.</p></div> : null}
+        {assistedSite && result.userProvidedEvidence ? <div className="mb-8 border border-[#34C759] bg-[#111111] p-5" role="status"><p className="data-label">User-provided public evidence</p><p className="mt-2 max-w-3xl text-sm leading-6 text-[#A1A1A1]">DBTI analyzed visible text pasted by you from <a className="text-[#F5F5F5] underline" href={result.userProvidedEvidence.sourceUrl} target="_blank" rel="noreferrer">{result.userProvidedEvidence.sourceUrl}</a>. DBTI did not fetch this page from its server. The score uses only this submitted evidence and should be read as an assisted report.</p></div> : null}
         <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
           <div><p className="data-label">Website</p><a href={result.publicInformation.website} className="data-value link-value" target="_blank" rel="noreferrer">{result.publicInformation.website}</a></div>
           <div><p className="data-label">Industry</p><p className="data-value">{result.classification.industry}</p><p className="mt-1 text-xs text-[#A1A1A1]">{result.classification.confidence ? `${result.classification.confidence}% classification confidence` : "Insufficient public data"}</p></div>
@@ -199,7 +202,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
       </section>
 
       <section className="py-12" aria-labelledby="score-title">
-        <SectionTitle index="02" title="DBTI Score" description={protectedSite ? "A numerical score requires collected first-party website evidence." : "A reproducible weighted calculation based on the observed evidence."} />
+        <SectionTitle index="02" title="DBTI Score" description={protectedSite ? "A numerical score requires collected first-party website evidence." : assistedSite ? "A reproducible calculation based only on the visible evidence you submitted." : "A reproducible weighted calculation based on the observed evidence."} />
         <div className="grid items-end gap-8 lg:grid-cols-[1fr_1.1fr]">
           <div className="border-l border-[#F5F5F5] pl-6">
             <p className="text-7xl font-medium leading-none tracking-[-0.08em] text-[#F5F5F5] sm:text-8xl">{result.dbtiScore ?? "—"}</p>

@@ -4,6 +4,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React, { type ComponentProps } from "react";
 
+const { assistedMutate } = vi.hoisted(() => ({ assistedMutate: vi.fn() }));
+
 vi.mock("@/components/DBTIResults", () => ({
   DBTIResults: () => null,
 }));
@@ -13,6 +15,9 @@ vi.mock("@/lib/trpc", () => ({
     analysis: {
       scan: {
         useMutation: () => ({ isPending: false, mutate: vi.fn() }),
+      },
+      assistedScan: {
+        useMutation: () => ({ isPending: false, mutate: assistedMutate }),
       },
     },
   },
@@ -46,5 +51,19 @@ describe("blocked-site recovery interaction", () => {
     expect(document.activeElement).toBe(input);
     expect(screen.getByRole("alert").textContent).toContain("Paste a different publicly accessible page");
     expect(screen.queryByText("This website blocks server-side scanning")).toBeNull();
+  });
+
+  it("enables assisted analysis only after enough visible evidence is pasted", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+    const input = screen.getByLabelText("Search a business or website");
+    await user.type(input, "https://protected.example");
+    const textarea = screen.getByLabelText("Paste visible public page text (free fallback)");
+    const submit = screen.getByRole("button", { name: /analyze pasted evidence/i });
+    expect((submit as HTMLButtonElement).disabled).toBe(true);
+    await user.type(textarea, "Protected Example provides public products and customer support. Contact information and company details are visible on this page for visitors.");
+    expect((submit as HTMLButtonElement).disabled).toBe(false);
+    await user.click(submit);
+    expect(assistedMutate).toHaveBeenCalledWith(expect.objectContaining({ query: "https://protected.example", content: expect.stringContaining("Protected Example") }));
   });
 });

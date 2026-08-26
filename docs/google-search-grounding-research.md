@@ -27,3 +27,7 @@ Google's Custom Search JSON API is closed to new customers, so it is not suitabl
 ## Validation record
 
 On 2026-08-26, a live DBTI scan of `https://example.com` returned the deterministic score (644) and the separately rendered Google public-information card. The available server-side Gemini quota returned HTTP 429, so the card accurately displayed `QUOTA_EXCEEDED` and retained no grounded summary or citations. This confirms that provider unavailability does not block website analysis or modify the score.
+
+## Free protected-site recovery
+
+DBTI does not require paid Google Custom Search credentials. When a website returns HTTP 403 to DBTI's server, the supported free recovery is user-assisted evidence: the user opens the public page in a normal browser, copies visible page text, and submits it with the page URL. DBTI validates the URL and bounds the pasted content before running deterministic analysis. The result is labeled `ASSISTED_EVIDENCE`; it does not claim DBTI fetched the page, and it does not bypass CAPTCHAs, authentication, robots controls, rate limits, or anti-bot protections.
