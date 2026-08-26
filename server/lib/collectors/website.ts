@@ -8,7 +8,7 @@ const MAX_REDIRECTS = 3;
 
 export class CollectionError extends Error {
   constructor(
-    public readonly code: "INVALID_URL" | "UNSAFE_URL" | "UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED_CONTENT",
+    public readonly code: "INVALID_URL" | "UNSAFE_URL" | "UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED_CONTENT" | "ACCESS_DENIED",
     message: string,
   ) {
     super(message);
@@ -133,6 +133,10 @@ export async function fetchPublicHtml(input: string | URL): Promise<CollectedPag
         }),
         deadline,
       ]);
+      if ([401, 403, 429].includes(response.status)) {
+        const reason = response.status === 429 ? "rate-limited" : "refused automated access";
+        throw new CollectionError("ACCESS_DENIED", `The website ${reason} from the DBTI server during this scan (HTTP ${response.status}). It may still work normally in a personal browser.`);
+      }
       if ([301, 302, 303, 307, 308].includes(response.status)) {
         const destination = response.headers.get("location");
         if (!destination) throw new CollectionError("UNAVAILABLE", "The website returned an invalid redirect.");

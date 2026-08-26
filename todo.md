@@ -35,3 +35,6 @@
 - [x] Diagnose why the DBTI Assistant returns an insufficient-evidence reply for a score-explanation question despite a completed scan.
 - [x] Add a deterministic, evidence-grounded assistant fallback for score-explanation questions when Gemini output is unavailable or invalid.
 - [x] Add regression coverage for the DBTI Assistant score-explanation fallback and insufficient-evidence safeguard.
+- [x] Diagnose Tesla official-site access denial during DBTI collection and report it accurately as a collection restriction when applicable.
+- [x] Diagnose and improve Honda Atlas visible-contact extraction across collected public pages.
+- [x] Add collection regression coverage for access-denied classification and contact-page evidence extraction.

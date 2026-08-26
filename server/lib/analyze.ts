@@ -66,6 +66,44 @@ function findPhone(html: string): string | undefined {
   return digits.length >= 8 && digits.length <= 15 ? candidate : undefined;
 }
 
+type PublicContact = { email?: string; phone?: string; source?: string };
+
+function findMailto(html: string): string | undefined {
+  const value = /\bmailto:([^"'\s?#>]+)/i.exec(html)?.[1];
+  if (!value) return undefined;
+  try {
+    return findEmail(decodeURIComponent(value));
+  } catch {
+    return findEmail(value);
+  }
+}
+
+function findTel(html: string): string | undefined {
+  const value = /\btel:([^"'?#>]+)/i.exec(html)?.[1];
+  return value ? findPhone(value.replace(/%20/gi, " ")) : undefined;
+}
+
+function collectPublicContact(pages: CollectedPage[]): PublicContact {
+  let email: string | undefined;
+  let phone: string | undefined;
+  let source: string | undefined;
+  for (const page of pages) {
+    const visibleText = stripHtml(page.html);
+    const pageEmail = findMailto(page.html) ?? findEmail(visibleText);
+    const pagePhone = findTel(page.html) ?? findPhone(visibleText);
+    if (pageEmail && !email) {
+      email = pageEmail;
+      source = page.finalUrl;
+    }
+    if (pagePhone && !phone) {
+      phone = pagePhone;
+      source ??= page.finalUrl;
+    }
+    if (email && phone) break;
+  }
+  return { ...(email ? { email } : {}), ...(phone ? { phone } : {}), ...(source ? { source } : {}) };
+}
+
 function socialProfileLinks(links: string[]): string[] {
   return links.filter((link) => {
     const host = new URL(link).hostname.toLowerCase();
@@ -125,7 +163,7 @@ function policyPage(name: string, pages: CollectedPage[]): CollectedPage | undef
   return pages.find((page) => new RegExp(name, "i").test(new URL(page.finalUrl).pathname));
 }
 
-function buildEvidence(home: CollectedPage, pages: CollectedPage[]): Evidence[] {
+function buildEvidence(home: CollectedPage, pages: CollectedPage[], contactCollectionDenied: boolean): Evidence[] {
   const source = home.finalUrl;
   const title = tagText(home.html, "title");
   const description = metaContent(home.html, "description");
@@ -136,8 +174,7 @@ function buildEvidence(home: CollectedPage, pages: CollectedPage[]): Evidence[] 
   const h1 = tagText(home.html, "h1");
   const links = extractLinks(home.html, home.finalUrl);
   const socialLinks = socialProfileLinks(links);
-  const publicEmail = findEmail(visibleText);
-  const publicPhone = findPhone(visibleText);
+  const publicContact = collectPublicContact([home, ...pages]);
   const privacy = policyPage("privacy|cookie", pages);
   const terms = policyPage("terms|legal", pages);
   const contact = policyPage("contact", pages);
@@ -179,7 +216,7 @@ function buildEvidence(home: CollectedPage, pages: CollectedPage[]): Evidence[] 
     metric("reliability", "DNS resolution", true, "VERIFIED_PASS", dnsSource, "The website domain resolved during this scan."),
     metric("reliability", "Homepage availability", home.status, home.status >= 200 && home.status < 400 ? "VERIFIED_PASS" : "VERIFIED_FAIL", source, `The homepage returned HTTP ${home.status} during this scan.`),
     metric("reliability", "Historical uptime", null, "UNVERIFIED", source, "Historical uptime cannot be inferred from a single scan."),
-    metric("transparency", "Public contact information", Boolean(publicEmail || publicPhone || contact), (publicEmail || publicPhone || contact) ? "VERIFIED_PASS" : "UNVERIFIED", contact?.finalUrl ?? source, (publicEmail || publicPhone || contact) ? "Visible public contact information or a contact page was found." : "No visible public contact information was verified in this bounded scan."),
+    metric("transparency", "Public contact information", Boolean(publicContact.email || publicContact.phone || contact), (publicContact.email || publicContact.phone || contact) ? "VERIFIED_PASS" : "UNVERIFIED", publicContact.source ?? contact?.finalUrl ?? source, (publicContact.email || publicContact.phone || contact) ? "Visible public contact information or a contact page was found in the successfully collected public pages." : contactCollectionDenied ? "A contact page was identified but refused automated collection; contact availability remains unverified." : "No visible public contact information was verified in this bounded scan."),
     metric("transparency", "About information", Boolean(about), about ? "VERIFIED_PASS" : "UNVERIFIED", about?.finalUrl ?? source, about ? "A publicly accessible about page was collected." : "No publicly accessible about page was verified in this bounded scan."),
     metric("transparency", "Structured business identity", hasJsonLd(home.html), hasJsonLd(home.html) ? "VERIFIED_PASS" : "UNVERIFIED", source, hasJsonLd(home.html) ? "Structured data provides a public business identity signal." : "No structured business identity signal was verified."),
     metric("reputation", "Reliable public reputation data", null, "UNVERIFIED", source, "No reliable public reputation source was collected; this is not treated as low reputation."),
@@ -214,7 +251,8 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
     throw new AnalysisInputError("UNAVAILABLE", "The supporting public pages could not be collected.");
   }
   const pages = collected.flatMap((item) => item.status === "fulfilled" ? [item.value] : []);
-  const evidence = buildEvidence(home, pages);
+  const contactCollectionDenied = keyPages.some((url, index) => /contact/i.test(new URL(url).pathname) && collected[index]?.status === "rejected" && collected[index].reason instanceof CollectionError && collected[index].reason.code === "ACCESS_DENIED");
+  const evidence = buildEvidence(home, pages, contactCollectionDenied);
   const factors = calculateFactorScores(evidence);
   const dbtiScore = calculateDbtiScore(factors);
   const band = scoreBand(dbtiScore);
@@ -222,16 +260,14 @@ export async function analyzeWebsite(query: string): Promise<DBTIResult> {
   const description = metaContent(home.html, "description") ?? "";
   const name = getBusinessName(home);
   const domain = new URL(home.finalUrl).hostname;
-  const visibleText = stripHtml(home.html);
   const socialLinks = socialProfileLinks(links);
-  const publicEmail = findEmail(visibleText);
-  const publicPhone = findPhone(visibleText);
+  const publicContact = collectPublicContact([home, ...pages]);
   const info: PublicInformation = {
     website: home.finalUrl,
     domain,
     ...(description ? { description } : {}),
-    ...(publicEmail ? { contactEmail: publicEmail } : {}),
-    ...(publicPhone ? { contactPhone: publicPhone } : {}),
+    ...(publicContact.email ? { contactEmail: publicContact.email } : {}),
+    ...(publicContact.phone ? { contactPhone: publicContact.phone } : {}),
     socialLinks,
     policies: pages.filter((page) => /privacy|cookie|terms|legal/i.test(page.finalUrl)).map((page) => page.finalUrl),
     verificationSignals: evidence.filter((item) => item.status === "VERIFIED_PASS" && ["security", "reliability", "transparency"].includes(item.factor)).map((item) => item.metric),
