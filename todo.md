@@ -61,3 +61,9 @@
 - [x] Run deterministic analysis only on validated user-provided evidence and label its provenance.
 - [x] Add protected-site paste-evidence UX and safe empty/error states.
 - [x] Add tests, validate the assisted flow, and save a checkpoint.
+- [x] Audit Gemini-dependent paths and define the DBTI-owned intelligence boundary.
+- [x] Select a non-Gemini server-side model through the live model catalog and add structured-output validation.
+- [x] Build deterministic public-evidence retrieval and extraction that can operate without Gemini.
+- [x] Replace Gemini-only interpretation and assistant fallbacks with the DBTI-owned pipeline.
+- [x] Preserve free assisted evidence for protected sites with explicit provenance and no bypass behavior.
+- [x] Add regression/UI coverage, run full validation, and save a checkpoint.

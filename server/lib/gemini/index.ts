@@ -1,11 +1,12 @@
+import { invokeLLM } from "../../_core/llm";
 import type { AiStatus, ClassificationResult, DBTIResult, Evidence, Recommendation } from "../../../shared/dbti";
+const DBTI_MODEL = "gpt-5-mini";
 
-const GEMINI_MODEL = "gemini-3.6-flash";
 const NO_DATA_RESPONSE = "I don't have enough verified data";
 
 type JsonRecord = Record<string, unknown>;
 
-class GeminiError extends Error {
+class IntelligenceError extends Error {
   constructor(public readonly code: "QUOTA_EXCEEDED" | "UNAVAILABLE", message: string) {
     super(message);
   }
@@ -74,46 +75,44 @@ function deterministicAssistantAnswer(question: string, scan: DBTIResult): strin
   return undefined;
 }
 
-async function callGeminiJson(instruction: string, payload: string): Promise<JsonRecord> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Gemini is not configured.");
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
+async function callDbtiJson(instruction: string, payload: string): Promise<JsonRecord> {
+  if (!process.env.BUILT_IN_FORGE_API_KEY) {
+    throw new IntelligenceError("UNAVAILABLE", "The DBTI intelligence engine is not configured.");
+  }
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: `${instruction}\n\n${payload}` }] }],
-        generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
+    const response = await Promise.race([
+      invokeLLM({
+      model: DBTI_MODEL,
+      messages: [
+        { role: "system", content: "You are the DBTI evidence intelligence engine. Return JSON only. Never invent facts, and cite only supplied evidence IDs." },
+        { role: "user", content: `${instruction}\n\n${payload}` },
+      ],
+      maxTokens: 2000,
+      responseFormat: { type: "json_object" },
       }),
-    });
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      if (response.status === 429) throw new GeminiError("QUOTA_EXCEEDED", "Gemini API quota is exhausted.");
-      throw new GeminiError("UNAVAILABLE", `Gemini returned HTTP ${response.status}${detail ? `: ${detail.slice(0, 120)}` : ""}`);
-    }
-    const body: unknown = await response.json();
-    const text = isRecord(body)
-      ? (Array.isArray(body.candidates) && isRecord(body.candidates[0]) && isRecord(body.candidates[0].content) && Array.isArray(body.candidates[0].content.parts) && isRecord(body.candidates[0].content.parts[0]) && typeof body.candidates[0].content.parts[0].text === "string" ? body.candidates[0].content.parts[0].text : undefined)
-      : undefined;
-    if (!text) throw new Error("Gemini returned no usable content.");
+      new Promise<never>((_, reject) => setTimeout(() => reject(new IntelligenceError("UNAVAILABLE", "The DBTI intelligence engine did not respond before the short analysis deadline.")), 900)),
+    ]);
+    const raw = response.choices[0]?.message.content;
+    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? raw.filter((part): part is { type: "text"; text: string } => part.type === "text").map((part) => part.text).join("\n") : "";
+    if (!text) throw new IntelligenceError("UNAVAILABLE", "DBTI intelligence engine returned no usable content.");
     const parsed: unknown = JSON.parse(text);
-    if (!isRecord(parsed)) throw new Error("Gemini returned malformed JSON.");
+    if (!isRecord(parsed)) throw new IntelligenceError("UNAVAILABLE", "DBTI intelligence engine returned malformed JSON.");
     return parsed;
-  } finally {
-    clearTimeout(timeout);
+  } catch (error) {
+    if (error instanceof IntelligenceError) throw error;
+    const message = error instanceof Error ? error.message : "DBTI intelligence engine could not be reached.";
+    if (/429|quota|rate limit/i.test(message)) throw new IntelligenceError("QUOTA_EXCEEDED", "DBTI intelligence engine is temporarily rate-limited.");
+    throw new IntelligenceError("UNAVAILABLE", message.slice(0, 180));
   }
 }
 
-export async function classifyWithGemini(
+export async function classifyWithDbtiEngine(
   current: ClassificationResult,
   business: DBTIResult["business"],
   publicInformation: DBTIResult["publicInformation"],
   evidence: Evidence[],
 ): Promise<ClassificationResult> {
-  const response = await callGeminiJson(
+  const response = await callDbtiJson(
     "Classify the business using only the facts below. Return JSON: {industry:string, subcategory:string, confidence:number, evidenceIds:string[]}. Never infer evidence that is not listed. Confidence must be 0-100.",
     `BUSINESS\nName: ${business.name}\nWebsite: ${publicInformation.website}\nDescription: ${publicInformation.description ?? "Unavailable"}\n\nEVIDENCE\n${evidenceContext(evidence)}`,
   );
@@ -122,11 +121,11 @@ export async function classifyWithGemini(
   const confidence = typeof response.confidence === "number" && Number.isFinite(response.confidence) ? Math.max(0, Math.min(100, Math.round(response.confidence))) : 0;
   const cited = byEvidenceIds(strings(response.evidenceIds), evidence);
   if (!industry || !subcategory || cited.length === 0) return current;
-  return { industry, subcategory, confidence, evidence: cited.map((item) => item.description), provider: "gemini" };
+  return { industry, subcategory, confidence, evidence: cited.map((item) => item.description), provider: "dbti-engine" };
 }
 
-export async function recommendationsWithGemini(result: DBTIResult): Promise<Recommendation[]> {
-  const response = await callGeminiJson(
+export async function recommendationsWithDbtiEngine(result: DBTIResult): Promise<Recommendation[]> {
+  const response = await callDbtiJson(
     "Generate concise prioritized improvements only from the evidence below. Return JSON: {recommendations:[{title:string, priority:'High'|'Medium'|'Low', suggestedAction:string, evidenceIds:string[]}]}. Every item must cite one or more listed evidenceIds. Do not claim numerical impact or make up findings.",
     `BUSINESS: ${result.business.name}\nFACTOR SCORES:\n${result.factors.map((factor) => `${factor.key}: ${factor.score}/100`).join("\n")}\n\nEVIDENCE\n${evidenceContext(result.evidence)}`,
   );
@@ -146,8 +145,8 @@ export async function recommendationsWithGemini(result: DBTIResult): Promise<Rec
   });
 }
 
-export async function explanationWithGemini(result: DBTIResult): Promise<string> {
-  const response = await callGeminiJson(
+export async function explanationWithDbtiEngine(result: DBTIResult): Promise<string> {
+  const response = await callDbtiJson(
     "Explain this DBTI result in no more than three concise sentences using only the supplied evidence. Return JSON: {explanation:string,evidenceIds:string[]}. Cite at least one evidenceId and never infer unlisted facts.",
     `BUSINESS: ${result.business.name}\nDBTI SCORE: ${result.dbtiScore}/1000\nGRADE: ${result.grade}\n\nEVIDENCE\n${evidenceContext(result.evidence)}`,
   );
@@ -156,12 +155,12 @@ export async function explanationWithGemini(result: DBTIResult): Promise<string>
   return explanation && cited.length > 0 ? explanation : result.explanation;
 }
 
-export async function answerWithGemini(question: string, scan: DBTIResult): Promise<string> {
+export async function answerWithDbtiEngine(question: string, scan: DBTIResult): Promise<string> {
   const available = validEvidence(scan.evidence);
   if (available.length === 0) return NO_DATA_RESPONSE;
   const fallback = deterministicAssistantAnswer(question, scan);
   try {
-    const response = await callGeminiJson(
+    const response = await callDbtiJson(
       `Answer the user's question using only the supplied DBTI evidence. Return JSON: {answer:string,evidenceIds:string[]}. The answer must explain only directly supported findings and must include at least one evidenceId. If there is insufficient support, return exactly: ${NO_DATA_RESPONSE}`,
       `QUESTION\n${question}\n\nBUSINESS\n${scan.business.name}\nScore: ${scan.dbtiScore}/1000\n\nEVIDENCE\n${evidenceContext(available)}`,
     );
@@ -171,41 +170,47 @@ export async function answerWithGemini(question: string, scan: DBTIResult): Prom
     return answer;
   } catch (error) {
     if (fallback) return fallback;
-    if (error instanceof GeminiError && error.code === "QUOTA_EXCEEDED") {
-      return "The Gemini API quota is currently exhausted, so I can't provide a grounded AI response for this scan. Review the verified evidence below or try again after quota is available.";
+    if (error instanceof IntelligenceError && error.code === "QUOTA_EXCEEDED") {
+      return "The DBTI intelligence engine is temporarily rate-limited, so I can't provide a grounded AI response for this scan right now. Review the verified evidence below or try again later.";
     }
     return NO_DATA_RESPONSE;
   }
 }
 
-export async function enrichWithGemini(result: DBTIResult): Promise<DBTIResult> {
-  if (!process.env.GEMINI_API_KEY) {
+export const classifyWithGemini = classifyWithDbtiEngine;
+export const recommendationsWithGemini = recommendationsWithDbtiEngine;
+export const explanationWithGemini = explanationWithDbtiEngine;
+export const answerWithGemini = answerWithDbtiEngine;
+export const enrichWithGemini = enrichWithDbtiEngine;
+
+export async function enrichWithDbtiEngine(result: DBTIResult): Promise<DBTIResult> {
+  if (!process.env.BUILT_IN_FORGE_API_KEY) {
     return {
       ...result,
       recommendations: deterministicRecommendations(result),
       aiAvailable: false,
       aiStatus: "NOT_CONFIGURED",
-      aiStatusMessage: "Gemini is not configured. The recommendations below are deterministic and linked to this scan's observed evidence.",
+      aiStatusMessage: "The DBTI intelligence engine is not configured. The recommendations below are deterministic and linked to this scan's observed evidence.",
     };
   }
   const outcomes = await Promise.allSettled([
-    classifyWithGemini(result.classification, result.business, result.publicInformation, result.evidence),
-    recommendationsWithGemini(result),
-    explanationWithGemini(result),
+    classifyWithDbtiEngine(result.classification, result.business, result.publicInformation, result.evidence),
+    recommendationsWithDbtiEngine(result),
+    explanationWithDbtiEngine(result),
   ]);
   const classification = outcomes[0].status === "fulfilled" ? outcomes[0].value : result.classification;
   const generatedRecommendations = outcomes[1].status === "fulfilled" ? outcomes[1].value : [];
   const explanation = outcomes[2].status === "fulfilled" ? outcomes[2].value : result.explanation;
-  const aiAvailable = classification.provider === "gemini" || generatedRecommendations.length > 0 || explanation !== result.explanation;
-  const quotaExhausted = outcomes.some((outcome) => outcome.status === "rejected" && outcome.reason instanceof GeminiError && outcome.reason.code === "QUOTA_EXCEEDED");
+  const aiAvailable = classification.provider === "dbti-engine" || generatedRecommendations.length > 0 || explanation !== result.explanation;
+  const quotaExhausted = outcomes.some((outcome) => outcome.status === "rejected" && outcome.reason instanceof IntelligenceError && outcome.reason.code === "QUOTA_EXCEEDED");
   const aiStatus: AiStatus = aiAvailable ? "AI_VALIDATED" : quotaExhausted ? "QUOTA_EXCEEDED" : outcomes.some((outcome) => outcome.status === "fulfilled") ? "NO_GROUNDED_OUTPUT" : "UNAVAILABLE";
   const aiStatusMessage = aiStatus === "AI_VALIDATED"
-    ? "Gemini produced evidence-validated insights for this scan."
+    ? "The DBTI intelligence engine produced evidence-validated insights for this scan."
     : aiStatus === "QUOTA_EXCEEDED"
-      ? "Gemini API quota is currently exhausted. Deterministic evidence-backed recommendations are shown instead; restore API quota or wait for it to reset to enable AI insights."
+      ? "The DBTI intelligence engine is temporarily rate-limited. Deterministic evidence-backed recommendations are shown instead; try again later to enable enriched insights."
     : aiStatus === "NO_GROUNDED_OUTPUT"
-      ? "Gemini did not return recommendations that could be validated against this scan. Deterministic evidence-backed recommendations are shown instead."
-      : "Gemini could not be reached for this scan. Deterministic evidence-backed recommendations are shown instead.";
+      ? "The DBTI intelligence engine did not return recommendations that could be validated against this scan. Deterministic evidence-backed recommendations are shown instead."
+      : "The DBTI intelligence engine could not be reached for this scan. Deterministic evidence-backed recommendations are shown instead.";
   return {
     ...result,
     classification,

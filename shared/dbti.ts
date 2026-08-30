@@ -57,7 +57,7 @@ export type ClassificationResult = {
   subcategory: string;
   confidence: number;
   evidence: string[];
-  provider: "deterministic" | "gemini";
+  provider: "deterministic" | "gemini" | "dbti-engine";
 };
 
 export type FactorScore = {
@@ -98,7 +98,7 @@ export type GooglePublicCitationSupport = {
 };
 
 export type GooglePublicInformation = {
-  provider: "GOOGLE_SEARCH";
+  provider: "GOOGLE_SEARCH" | "PUBLIC_WEB_SEARCH";
   status: GooglePublicInformationStatus;
   statusMessage: string;
   summary?: string;

@@ -40,8 +40,8 @@ function scoreScan(): DBTIResult {
 
 describe("DBTI Assistant grounded fallback", () => {
   it("explains a low score from deterministic verified scan evidence when Gemini cannot answer", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("Gemini unavailable for test"))));
+    vi.stubEnv("BUILT_IN_FORGE_API_KEY", "");
+    vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("DBTI engine unavailable for test"))));
     const answer = await answerWithGemini("Why is my score low?", scoreScan());
     expect(answer).toContain("480/1000");
     expect(answer).toContain("Performance (38/100)");

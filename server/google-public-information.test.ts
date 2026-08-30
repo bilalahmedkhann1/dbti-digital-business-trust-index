@@ -1,88 +1,55 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { searchGooglePublicInformation } from "./lib/googlePublicInformation";
+import { describe, expect, it } from "vitest";
+import { parseFreePublicSearchResults } from "./lib/googlePublicInformation";
 
-const business = {
-  name: "Example Company",
-  website: "https://example.com/",
-  domain: "example.com",
-};
+const searchHtml = `
+  <div class="result results_links">
+    <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fabout">Example Company About</a>
+    <a class="result__snippet">Example Company provides public product and support information.</a>
+  </div>
+  <div class="result results_links">
+    <a class="result__a" href="https://example.com/contact">Contact Example Company</a>
+    <a class="result__snippet">Contact details and customer support resources are listed here.</a>
+  </div>
+  <div class="result results_links">
+    <a class="result__a" href="https://unrelated.example/news">Unrelated result</a>
+    <a class="result__snippet">This result must not be included.</a>
+  </div>
+`;
 
-const originalApiKey = process.env.GEMINI_API_KEY;
-
-function mockResponse(body: unknown, status = 200) {
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => body,
-  }));
-}
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-  if (originalApiKey === undefined) delete process.env.GEMINI_API_KEY;
-  else process.env.GEMINI_API_KEY = originalApiKey;
-});
-
-describe("Google public-information search", () => {
-  it("keeps source-cited Google findings distinct from website scoring data", async () => {
-    process.env.GEMINI_API_KEY = "test-key";
-    mockResponse({
-      candidates: [{
-        content: { parts: [{ text: "Example Company has an official public website and listed customer support resources." }] },
-        groundingMetadata: {
-          groundingChunks: [
-            { web: { uri: "https://source.example/article", title: "Independent source" } },
-            { web: { uri: "https://example.com/support", title: "Example support" } },
-          ],
-          groundingSupports: [
-            { segment: { startIndex: 0, endIndex: 27 }, groundingChunkIndices: [0] },
-            { segment: { startIndex: 28, endIndex: 76 }, groundingChunkIndices: [1] },
-          ],
-          searchEntryPoint: { renderedContent: '<a href="https://www.google.com/search?q=example">Search suggestions</a>' },
-        },
-      }],
-    });
-
-    const result = await searchGooglePublicInformation(business);
+describe("free public-information search", () => {
+  it("keeps same-domain search findings cited and separate from scoring", () => {
+    const result = parseFreePublicSearchResults(searchHtml, "example.com");
 
     expect(result.status).toBe("AVAILABLE");
-    expect(result.provider).toBe("GOOGLE_SEARCH");
-    expect(result.summary).toContain("Example Company");
+    expect(result.provider).toBe("PUBLIC_WEB_SEARCH");
+    expect(result.summary).toContain("Example Company About");
     expect(result.citations).toEqual([
-      { id: "google-source-1", title: "Independent source", url: "https://source.example/article" },
-      { id: "google-source-2", title: "Example support", url: "https://example.com/support" },
+      { id: "public-search-source-1", title: "Example Company About", url: "https://example.com/about" },
+      { id: "public-search-source-2", title: "Contact Example Company", url: "https://example.com/contact" },
     ]);
     expect(result.citationSupports).toHaveLength(2);
-    expect(result.searchSuggestionHtml).toContain("Search suggestions");
-    expect(vi.mocked(fetch).mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
-    expect(JSON.stringify(vi.mocked(fetch).mock.calls[0]?.[1])).toContain("google_search");
+    expect(result.statusMessage).toContain("non-scoring supplement");
   });
 
-  it("does not expose a public-information summary without citations and Google search suggestions", async () => {
-    process.env.GEMINI_API_KEY = "test-key";
-    mockResponse({
-      candidates: [{
-        content: { parts: [{ text: "An unsupported summary." }] },
-        groundingMetadata: { groundingChunks: [], groundingSupports: [] },
-      }],
-    });
-
-    const result = await searchGooglePublicInformation(business);
+  it("rejects unrelated results and returns no grounded output when none remain", () => {
+    const result = parseFreePublicSearchResults(`
+      <a class="result__a" href="https://unrelated.example/news">Unrelated result</a>
+      <a class="result__snippet">Unrelated content.</a>
+    `, "example.com");
 
     expect(result.status).toBe("NO_GROUNDED_OUTPUT");
     expect(result.summary).toBeUndefined();
     expect(result.citations).toEqual([]);
-    expect(result.searchSuggestionHtml).toBeUndefined();
   });
 
-  it("returns a safe unavailable state when Google Search grounding is quota-limited", async () => {
-    process.env.GEMINI_API_KEY = "test-key";
-    mockResponse({}, 429);
+  it("decodes safe HTML entities without rendering executable markup", () => {
+    const result = parseFreePublicSearchResults(`
+      <a class="result__a" href="https://example.com/about">Example &amp; Company</a>
+      <a class="result__snippet">Public &lt;support&gt; information.</a>
+    `, "example.com");
 
-    const result = await searchGooglePublicInformation(business);
-
-    expect(result.status).toBe("QUOTA_EXCEEDED");
-    expect(result.citations).toEqual([]);
-    expect(result.statusMessage).toContain("quota is exhausted");
+    expect(result.summary).toContain("Example & Company");
+    expect(result.summary).toContain("Public <support> information.");
+    expect(result.summary).not.toContain("<script");
   });
 });

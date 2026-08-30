@@ -38,15 +38,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("Gemini quota fallback", () => {
-  it("identifies API quota exhaustion and retains only evidence-backed deterministic recommendations", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response('{"error":{"code":429}}', { status: 429 }))));
-
+describe("DBTI intelligence engine fallback", () => {
+  it("retains evidence-backed deterministic recommendations when the optional engine is unavailable", async () => {
+    vi.stubEnv("BUILT_IN_FORGE_API_KEY", "");
     const result = await enrichWithGemini(scanWithVerifiedFailure());
 
-    expect(result).toMatchObject({ aiAvailable: false, aiStatus: "QUOTA_EXCEEDED" });
-    expect(result.aiStatusMessage).toContain("quota");
+    expect(result).toMatchObject({ aiAvailable: false, aiStatus: "NOT_CONFIGURED" });
+    expect(result.aiStatusMessage).toContain("intelligence engine");
     expect(result.recommendations).toEqual([expect.objectContaining({ title: "Review Frame protection", priority: "High" })]);
   });
 });
