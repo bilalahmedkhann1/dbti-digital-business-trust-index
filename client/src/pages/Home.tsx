@@ -91,7 +91,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0B0B0B] text-[#F5F5F5]">
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
         <nav className="flex items-center gap-6" aria-label="Primary navigation">
-          <Link href="/" className="mr-3 text-sm font-semibold tracking-[-0.04em] text-[#F5F5F5]">DBTI</Link>
+          <Link href="/" aria-label="DBTI home" className="mr-3 inline-flex items-center rounded-md bg-[#FFFFFF] px-2 py-1"><img src="/manus-storage/dbti-logo-cropped_1470a17a.png" alt="DBTI" className="h-7 w-auto object-contain" /></Link>
           <Link href="/" className={`text-sm transition-colors ${location === "/" ? "text-[#F5F5F5]" : "text-[#A1A1A1] hover:text-[#F5F5F5]"}`}>Home</Link>
           <Link href="/dashboard" className={`text-sm transition-colors ${location === "/dashboard" ? "text-[#F5F5F5]" : "text-[#A1A1A1] hover:text-[#F5F5F5]"}`}>Dashboard</Link>
         </nav>

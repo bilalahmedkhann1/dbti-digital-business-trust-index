@@ -72,3 +72,8 @@
 - [x] Add free user-assisted Google result screenshot and pasted-result evidence intake.
 - [x] Render screenshot evidence with source, timestamp, and non-scoring limitations.
 - [x] Add tests, validate the flow, and save a checkpoint.
+- [x] Register the user-provided DBTI logo as the site brand asset.
+- [x] Apply the logo to the navbar, page metadata, and app branding configuration.
+- [x] Verify logo sizing, contrast, and responsive presentation.
+- [ ] Save a checkpoint after the logo branding changes are fully validated.
+- [x] Improve the supplied logo’s visible contrast and transparent-padding presentation in the dark navbar.
