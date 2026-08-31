@@ -75,5 +75,5 @@
 - [x] Register the user-provided DBTI logo as the site brand asset.
 - [x] Apply the logo to the navbar, page metadata, and app branding configuration.
 - [x] Verify logo sizing, contrast, and responsive presentation.
-- [ ] Save a checkpoint after the logo branding changes are fully validated.
+- [x] Save a checkpoint after the logo branding changes are fully validated.
 - [x] Improve the supplied logo’s visible contrast and transparent-padding presentation in the dark navbar.
