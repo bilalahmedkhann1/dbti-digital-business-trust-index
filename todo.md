@@ -77,3 +77,6 @@
 - [x] Verify logo sizing, contrast, and responsive presentation.
 - [x] Save a checkpoint after the logo branding changes are fully validated.
 - [x] Improve the supplied logo’s visible contrast and transparent-padding presentation in the dark navbar.
+- [x] Remove the navbar’s white logo background while preserving readable transparent branding.
+- [x] Verify the transparent logo on desktop and mobile and save a checkpoint.
+- [x] Save a new checkpoint after the transparent logo update passes desktop and mobile verification.
