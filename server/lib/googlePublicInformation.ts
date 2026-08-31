@@ -6,7 +6,14 @@ const MAX_SEARCH_RESULTS = 6;
 const SEARCH_RESULT_TITLE_LENGTH = 240;
 const SEARCH_RESULT_SNIPPET_LENGTH = 420;
 
-type JsonRecord = Record<string, unknown>;
+export type PublicSearchDetails = { query: string; searchUrl: string };
+
+export function buildPublicSearchDetails(business: Business): PublicSearchDetails {
+  const host = new URL(business.website).hostname.replace(/^www\./, "");
+  const query = `site:${host} ${business.name}`;
+  return { query, searchUrl: `https://www.google.com/search?q=${encodeURIComponent(query)}` };
+}
+
 
 function publicHttpUrl(value: unknown): string | undefined {
   if (typeof value !== "string" || !value.trim()) return undefined;
@@ -17,6 +24,15 @@ function publicHttpUrl(value: unknown): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+export function attachPublicSearchDetails(
+  information: GooglePublicInformation,
+  business: Business,
+  extras: Pick<GooglePublicInformation, "screenshotDataUrl" | "screenshotSubmittedAt" | "screenshotSource"> = {},
+): GooglePublicInformation {
+  const details = buildPublicSearchDetails(business);
+  return { ...information, ...details, ...extras };
 }
 
 export function unavailableGooglePublicInformation(
@@ -98,7 +114,7 @@ export async function searchGooglePublicInformation(business: Business): Promise
     return unavailableGooglePublicInformation("UNAVAILABLE", "Public search could not validate the submitted website domain.");
   }
 
-  const query = `site:${requestedHost} ${business.name}`;
+  const { query } = buildPublicSearchDetails(business);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PUBLIC_SEARCH_TIMEOUT_MS);
   try {
@@ -106,13 +122,13 @@ export async function searchGooglePublicInformation(business: Business): Promise
       headers: { Accept: "text/html", "User-Agent": "DBTI-public-evidence/1.0" },
       signal: controller.signal,
     });
-    if (!response.ok) return unavailableGooglePublicInformation("UNAVAILABLE", `Free public search returned HTTP ${response.status}.`);
-    return parseFreePublicSearchResults(await response.text(), requestedHost);
+    if (!response.ok) return attachPublicSearchDetails(unavailableGooglePublicInformation("UNAVAILABLE", `Free public search returned HTTP ${response.status}.`), business);
+    return attachPublicSearchDetails(parseFreePublicSearchResults(await response.text(), requestedHost), business);
   } catch (error) {
     const message = error instanceof Error && error.name === "AbortError"
       ? "Free public search did not complete before the scan deadline."
       : "Free public search could not be reached during this scan.";
-    return unavailableGooglePublicInformation("UNAVAILABLE", message);
+    return attachPublicSearchDetails(unavailableGooglePublicInformation("UNAVAILABLE", message), business);
   } finally {
     clearTimeout(timeout);
   }

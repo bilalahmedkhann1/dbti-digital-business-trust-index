@@ -2,7 +2,7 @@ import { calculateDbtiScore, calculateFactorScores, scoreBand } from "../../lib/
 import type { Business, ClassificationResult, DBTIResult, Evidence, FactorKey, MetricStatus, PublicInformation } from "../../shared/dbti";
 import { CollectionError, extractLinks, fetchPublicHtml, normalizePublicUrl, selectKeyPages, type CollectedPage } from "./collectors/website";
 import { enrichWithGemini } from "./gemini";
-import { searchGooglePublicInformation, unavailableGooglePublicInformation } from "./googlePublicInformation";
+import { attachPublicSearchDetails, searchGooglePublicInformation, unavailableGooglePublicInformation } from "./googlePublicInformation";
 
 export class AnalysisInputError extends Error {
   constructor(public readonly code: string, message: string) {
@@ -268,7 +268,7 @@ function buildEvidence(home: CollectedPage, pages: CollectedPage[], contactColle
   ];
 }
 
-export async function analyzeWebsite(query: string, providedContent?: string): Promise<DBTIResult> {
+export async function analyzeWebsite(query: string, providedContent?: string, googleScreenshotDataUrl?: string): Promise<DBTIResult> {
   let requested: URL;
   try {
     requested = normalizePublicUrl(query);
@@ -281,10 +281,14 @@ export async function analyzeWebsite(query: string, providedContent?: string): P
   if (assistedContent !== undefined && (assistedContent.length < 80 || assistedContent.length > 100_000)) {
     throw new AnalysisInputError("INVALID_EVIDENCE", "Paste at least 80 and no more than 100,000 characters of publicly visible page text.");
   }
+  if (googleScreenshotDataUrl !== undefined && (!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(googleScreenshotDataUrl) || googleScreenshotDataUrl.length > 4_000_000)) {
+    throw new AnalysisInputError("INVALID_EVIDENCE", "Upload a PNG, JPEG, or WebP Google results screenshot smaller than 3 MB.");
+  }
 
   let home: CollectedPage;
   if (assistedContent !== undefined) {
-    home = { requestedUrl: requested.href, finalUrl: requested.href, status: 200, headers: { "x-dbti-evidence-source": "user-provided" }, html: `<html><head><title>${escapeHtml(requested.hostname)}</title></head><body><main><p>${escapeHtml(assistedContent).replace(/\n/g, "</p><p>")}</p></main></body></html>`, elapsedMs: 0 };
+    const assistedTitle = assistedContent.split(/\n+/).map((line) => line.trim()).find((line) => line.length >= 2 && line.length <= 120) ?? requested.hostname;
+    home = { requestedUrl: requested.href, finalUrl: requested.href, status: 200, headers: { "x-dbti-evidence-source": "user-provided" }, html: `<html><head><title>${escapeHtml(assistedTitle)}</title></head><body><main><p>${escapeHtml(assistedContent).replace(/\n/g, "</p><p>")}</p></main></body></html>`, elapsedMs: 0 };
   } else {
     try {
       home = await withinCollectionDeadline(fetchPublicHtml(requested));
@@ -351,12 +355,13 @@ export async function analyzeWebsite(query: string, providedContent?: string): P
     aiAvailable: false,
     aiStatus: "NOT_CONFIGURED",
     aiStatusMessage: "Gemini has not been configured for this project. Evidence-backed deterministic recommendations are shown when available.",
-    googlePublicInformation: unavailableGooglePublicInformation("NOT_CONFIGURED", "Google public-information search has not been requested for this scan."),
+    googlePublicInformation: unavailableGooglePublicInformation("NOT_CONFIGURED", "Public-web search has not been requested for this scan."),
     ...(assistedContent !== undefined ? { userProvidedEvidence: { sourceUrl: requested.href, characterCount: assistedContent.length, submittedAt: now() } } : {}),
   };
-  const [enriched, googlePublicInformation] = await Promise.all([
+  const [enriched, searchedPublicInformation] = await Promise.all([
     enrichWithGemini(deterministicResult),
     searchGooglePublicInformation(business),
   ]);
+  const googlePublicInformation = attachPublicSearchDetails(searchedPublicInformation, business, googleScreenshotDataUrl ? { screenshotDataUrl: googleScreenshotDataUrl, screenshotSubmittedAt: now(), screenshotSource: "USER_BROWSER" } : {});
   return { ...enriched, googlePublicInformation };
 }

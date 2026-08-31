@@ -67,3 +67,8 @@
 - [x] Replace Gemini-only interpretation and assistant fallbacks with the DBTI-owned pipeline.
 - [x] Preserve free assisted evidence for protected sites with explicit provenance and no bypass behavior.
 - [x] Add regression/UI coverage, run full validation, and save a checkpoint.
+- [x] Define business-name extraction and exact Google query provenance rules.
+- [x] Generate a name-first Google search URL scoped to the extracted business and domain.
+- [x] Add free user-assisted Google result screenshot and pasted-result evidence intake.
+- [x] Render screenshot evidence with source, timestamp, and non-scoring limitations.
+- [x] Add tests, validate the flow, and save a checkpoint.

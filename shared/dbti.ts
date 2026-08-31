@@ -105,6 +105,11 @@ export type GooglePublicInformation = {
   citations: GooglePublicCitation[];
   citationSupports: GooglePublicCitationSupport[];
   searchSuggestionHtml?: string;
+  searchQuery?: string;
+  searchUrl?: string;
+  screenshotDataUrl?: string;
+  screenshotSubmittedAt?: string;
+  screenshotSource?: "USER_BROWSER";
 };
 
 export type DBTIScanMode = "WEBSITE_EVIDENCE" | "PUBLIC_SEARCH_ONLY" | "ASSISTED_EVIDENCE";

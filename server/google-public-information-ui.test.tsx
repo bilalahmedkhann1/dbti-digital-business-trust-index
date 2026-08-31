@@ -62,10 +62,19 @@ describe("Google public-information dashboard", () => {
     expect(container.textContent).toMatch(/A cited\s+\[1\]public-information summary\./);
     expect(screen.getByRole("link", { name: "Citation 1: Cited source" })).toHaveProperty("href", "https://source.example/article");
     expect(screen.getAllByRole("link", { name: /cited source/i })).toHaveLength(2);
-    expect(screen.getByText(/does not affect the deterministic DBTI score/i)).toBeTruthy();
+    expect(screen.getAllByText(/does not affect the deterministic DBTI score/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByLabelText("Google Search suggestions").textContent).toContain("Google Search suggestions");
     expect(container.innerHTML).not.toContain("onclick");
     expect(container.innerHTML).not.toContain("<img");
+  });
+
+  it("displays an attached Google results screenshot with user-browser provenance", () => {
+    render(<DBTIResults result={{ ...result, googlePublicInformation: { ...result.googlePublicInformation, screenshotDataUrl: "data:image/png;base64,ZmFrZQ==", screenshotSource: "USER_BROWSER", screenshotSubmittedAt: "2026-08-31T00:00:00.000Z" } }} onNewScan={vi.fn()} />);
+
+    expect(screen.getByText(/screenshot supplied from the user’s browser/i)).toBeTruthy();
+    expect(screen.getByText(/Submitted 8\/31\/2026/i)).toBeTruthy();
+    expect(screen.getAllByText(/does not affect the deterministic DBTI score/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByAltText(/Google search results for Example Company/i)).toHaveProperty("src", "data:image/png;base64,ZmFrZQ==");
   });
 
   it("explains protected-site limits and does not display a fabricated score", () => {

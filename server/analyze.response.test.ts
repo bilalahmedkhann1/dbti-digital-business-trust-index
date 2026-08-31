@@ -35,6 +35,7 @@ vi.mock("./lib/googlePublicInformation", () => ({
     citationSupports: [{ startIndex: 0, endIndex: 10, citationIds: ["source-1"] }],
   })),
   unavailableGooglePublicInformation: vi.fn(),
+  attachPublicSearchDetails: vi.fn((information: any, business: any, extras: any = {}) => ({ ...information, searchQuery: `site:${business.domain} ${business.name}`, searchUrl: `https://www.google.com/search?q=${encodeURIComponent(`site:${business.domain} ${business.name}`)}`, ...extras })),
 }));
 
 import { extractLinks, fetchPublicHtml, selectKeyPages } from "./lib/collectors/website";

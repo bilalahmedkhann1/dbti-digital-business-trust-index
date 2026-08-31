@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFreePublicSearchResults } from "./lib/googlePublicInformation";
+import { buildPublicSearchDetails, parseFreePublicSearchResults } from "./lib/googlePublicInformation";
 
 const searchHtml = `
   <div class="result results_links">
@@ -17,6 +17,13 @@ const searchHtml = `
 `;
 
 describe("free public-information search", () => {
+  it("builds a Google query from the extracted business name and submitted domain", () => {
+    const details = buildPublicSearchDetails({ name: "Example Company", website: "https://www.example.com/", domain: "example.com" });
+    expect(details.query).toBe("site:example.com Example Company");
+    expect(details.searchUrl).toContain("https://www.google.com/search?q=");
+    expect(decodeURIComponent(details.searchUrl)).toContain("site:example.com Example Company");
+  });
+
   it("keeps same-domain search findings cited and separate from scoring", () => {
     const result = parseFreePublicSearchResults(searchHtml, "example.com");
 

@@ -26,8 +26,12 @@ export const appRouter = router({
       .input(z.object({ query: z.string().trim().min(1).max(500) }))
       .mutation(async ({ input }) => analyzeWebsite(input.query)),
     assistedScan: publicProcedure
-      .input(z.object({ query: z.string().trim().min(1).max(500), content: z.string().trim().min(80).max(100_000) }))
-      .mutation(async ({ input }) => analyzeWebsite(input.query, input.content)),
+      .input(z.object({
+        query: z.string().trim().min(1).max(500),
+        content: z.string().trim().min(80).max(100_000),
+        googleScreenshotDataUrl: z.string().max(4_000_000).optional(),
+      }))
+      .mutation(async ({ input }) => analyzeWebsite(input.query, input.content, input.googleScreenshotDataUrl)),
   }),
 
   ai: router({

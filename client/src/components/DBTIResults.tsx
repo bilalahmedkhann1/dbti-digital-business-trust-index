@@ -130,18 +130,20 @@ function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
         <div>
           <p className="data-label">Google public information</p>
           <h3 id="google-public-information-title" className="mt-2 text-lg font-medium text-[#F5F5F5]">Public web findings</h3>
+          {publicInformation.searchQuery ? <p className="mt-2 text-xs leading-5 text-[#A1A1A1]">Query: <span className="font-mono text-[#F5F5F5]">{publicInformation.searchQuery}</span></p> : null}
         </div>
         <Badge variant="outline" className="w-fit border-[#5856D6] bg-transparent text-xs font-normal text-[#F5F5F5]">
-          {publicInformation.status === "AVAILABLE" ? "Google Search-grounded" : "Unavailable"}
+          {publicInformation.status === "AVAILABLE" ? (publicInformation.provider === "GOOGLE_SEARCH" ? "Google Search-grounded" : "Public-web search") : "Unavailable"}
         </Badge>
       </div>
 
+      {publicInformation.searchUrl ? <a href={publicInformation.searchUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-[#007AFF] underline-offset-4 hover:underline">Open this Google search <ExternalLink className="size-3" aria-hidden="true" /></a> : null}
       {publicInformation.status === "AVAILABLE" && publicInformation.summary ? (
         <>
           <GroundedSummary result={result} />
           <p className="mt-4 text-xs leading-5 text-[#A1A1A1]">This source-cited public-information supplement does not affect the deterministic DBTI score.</p>
           <div className="mt-5 border-t border-[#262626] pt-4">
-            <p className="data-label">Sources cited by Google Search</p>
+            <p className="data-label">Sources cited by {publicInformation.provider === "GOOGLE_SEARCH" ? "Google Search" : "public-web search"}</p>
             <ul className="mt-3 space-y-2">
               {publicInformation.citations.map((citation) => (
                 <li key={citation.id}>
@@ -159,6 +161,7 @@ function GooglePublicInformationCard({ result }: { result: DBTIResult }) {
       ) : (
         <p className="mt-4 max-w-3xl text-sm leading-6 text-[#A1A1A1]">{publicInformation.statusMessage} {protectedSite ? "No deterministic score is shown because first-party website content was not available." : "The website-only evidence and deterministic score remain available."}</p>
       )}
+      {publicInformation.screenshotDataUrl ? <figure className="mt-5 border-t border-[#262626] pt-4"><figcaption className="data-label">Google results screenshot supplied from the user’s browser</figcaption><p className="mt-2 text-xs leading-5 text-[#A1A1A1]">Submitted {publicInformation.screenshotSubmittedAt ? new Date(publicInformation.screenshotSubmittedAt).toLocaleString() : "without a recorded timestamp"}. This screenshot is user-provided and does not affect the deterministic DBTI score.</p><img src={publicInformation.screenshotDataUrl} alt={`Google search results for ${publicInformation.searchQuery ?? result.business.name}`} className="mt-3 max-h-[32rem] w-full rounded-lg border border-[#262626] object-contain object-left" /></figure> : null}
     </article>
   );
 }
