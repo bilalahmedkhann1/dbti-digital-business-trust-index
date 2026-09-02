@@ -21,11 +21,12 @@ function contrast(first: string, second: string) {
 describe("DBTI refreshed palette and responsive layout contracts", () => {
   it("uses only the supplied core palette for theme tokens and preserves high-contrast text surfaces", async () => {
     const css = await readFile(resolve(clientPath, "index.css"), "utf8");
-    ["#FFFFFF", "#1C1C1E", "#007AFF", "#5856D6", "#34C759"].forEach((color) => expect(css).toContain(color));
-    expect(css).not.toContain("#524646");
-    expect(css).not.toContain("#EC5B38");
-    expect(contrast("#FFFFFF", "#1C1C1E")).toBeGreaterThanOrEqual(4.5);
-    expect(contrast("#1C1C1E", "#FFFFFF")).toBeGreaterThanOrEqual(4.5);
+    ["#EDEBDE", "#810100", "#630102", "#1B1716"].forEach((color) => expect(css).toContain(color));
+    expect(css).not.toContain("#007AFF");
+    expect(css).not.toContain("#5856D6");
+    expect(css).not.toContain("#34C759");
+    expect(contrast("#EDEBDE", "#1B1716")).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("#1B1716", "#EDEBDE")).toBeGreaterThanOrEqual(4.5);
   });
 
   it("preserves the mobile-first search layout and readable desktop type breakpoint", async () => {
@@ -34,5 +35,28 @@ describe("DBTI refreshed palette and responsive layout contracts", () => {
     expect(home).toContain("px-5 sm:px-8");
     expect(home).toContain("sm:text-6xl");
     expect(home).toContain("!bg-[#FFFFFF]");
+  });
+
+  it("uses Cotton as the initial light theme and Noir Black as the dark theme", async () => {
+    const css = await readFile(resolve(clientPath, "index.css"), "utf8");
+    const app = await readFile(resolve(clientPath, "App.tsx"), "utf8");
+    const toggle = await readFile(resolve(clientPath, "components/ThemeToggle.tsx"), "utf8");
+    expect(css).toContain(":root {");
+    expect(css).toContain("--background: #EDEBDE;");
+    expect(css).toContain(".dark {");
+    expect(css).toContain("--background: #1B1716;");
+    expect(app).toContain('defaultTheme="light" switchable');
+    expect(app).toContain("<ThemeToggle />");
+    expect(toggle).toContain('aria-label={label}');
+    expect(toggle).toContain("fixed bottom-5 right-5 z-50");
+  });
+
+  it("keeps theme toggle controls keyboard-addressable and preference-aware", async () => {
+    const context = await readFile(resolve(clientPath, "contexts/ThemeContext.tsx"), "utf8");
+    const toggle = await readFile(resolve(clientPath, "components/ThemeToggle.tsx"), "utf8");
+    expect(context).toContain('localStorage.getItem("theme")');
+    expect(context).toContain('localStorage.setItem("theme", theme)');
+    expect(toggle).toContain('type="button"');
+    expect(toggle).toContain("aria-pressed={theme === \"dark\"}");
   });
 });

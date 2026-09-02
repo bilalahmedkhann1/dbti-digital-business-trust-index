@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ACCESS_RESTRICTION_MESSAGE, isAccessRestrictionMessage } from "@/lib/collectionStatus";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { DBTIResult } from "@shared/dbti";
 import { ArrowRight, ExternalLink, Search, ShieldAlert } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -24,6 +25,8 @@ export default function Home() {
   const [googleScreenshotDataUrl, setGoogleScreenshotDataUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [location] = useLocation();
+  const { theme } = useTheme();
+  const logoSrc = theme === "dark" ? "/manus-storage/dbti-logo-light_d3f5013b.png" : "/manus-storage/dbti-logo-cropped_1470a17a.png";
   useEffect(() => {
     if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("simulate_access_restricted")) {
       setMessage(ACCESS_RESTRICTION_MESSAGE);
@@ -91,7 +94,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0B0B0B] text-[#F5F5F5]">
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
         <nav className="flex items-center gap-6" aria-label="Primary navigation">
-          <Link href="/" aria-label="DBTI home" className="mr-3 inline-flex items-center"><img src="/manus-storage/dbti-logo-light_d3f5013b.png" alt="DBTI" className="h-7 w-auto object-contain" /></Link>
+          <Link href="/" aria-label="DBTI home" className="mr-3 inline-flex items-center"><img src={logoSrc} alt="DBTI" className="h-7 w-auto object-contain" /></Link>
           <Link href="/" className={`text-sm transition-colors ${location === "/" ? "text-[#F5F5F5]" : "text-[#A1A1A1] hover:text-[#F5F5F5]"}`}>Home</Link>
           <Link href="/dashboard" className={`text-sm transition-colors ${location === "/dashboard" ? "text-[#F5F5F5]" : "text-[#A1A1A1] hover:text-[#F5F5F5]"}`}>Dashboard</Link>
         </nav>

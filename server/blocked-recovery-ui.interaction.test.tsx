@@ -29,6 +29,15 @@ vi.mock("wouter", () => ({
 }));
 
 import Home from "@/pages/Home";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+
+function renderHome() {
+  return render(
+    <ThemeProvider defaultTheme="light" switchable>
+      <Home />
+    </ThemeProvider>,
+  );
+}
 
 describe("blocked-site recovery interaction", () => {
   beforeEach(() => {
@@ -42,7 +51,7 @@ describe("blocked-site recovery interaction", () => {
 
   it("focuses the website field and shows targeted public-page guidance after the retry action", async () => {
     const user = userEvent.setup();
-    render(<Home />);
+    renderHome();
 
     expect(await screen.findByText("This website blocks server-side scanning")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /try a public page/i }));
@@ -55,7 +64,7 @@ describe("blocked-site recovery interaction", () => {
 
   it("enables assisted analysis only after enough visible evidence is pasted", async () => {
     const user = userEvent.setup();
-    render(<Home />);
+    renderHome();
     const input = screen.getByLabelText("Search a business or website");
     await user.type(input, "https://protected.example");
     const textarea = screen.getByLabelText("Paste visible public page text (free fallback)");

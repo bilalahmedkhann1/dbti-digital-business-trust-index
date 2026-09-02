@@ -80,3 +80,10 @@
 - [x] Remove the navbar’s white logo background while preserving readable transparent branding.
 - [x] Verify the transparent logo on desktop and mobile and save a checkpoint.
 - [x] Save a new checkpoint after the transparent logo update passes desktop and mobile verification.
+- [x] Add Cotton, Cherry Red, Maroon, and Noir Black light/dark theme tokens with light mode as default.
+- [x] Add a floating accessible theme toggle with persisted user preference.
+- [x] Validate contrast, responsive presentation, tests, and production build in both themes.
+- [x] Save a checkpoint for the completed theme system.
+- [x] Visually verify the dark theme, floating toggle, readable logo, and mobile layout.
+- [x] Save a new checkpoint after verified light/dark theme changes.
+- [x] Fix the scan orchestration runtime import error for the DBTI intelligence adapter and revalidate the dev server.

@@ -1,7 +1,7 @@
 import { calculateDbtiScore, calculateFactorScores, scoreBand } from "../../lib/scoring";
 import type { Business, ClassificationResult, DBTIResult, Evidence, FactorKey, MetricStatus, PublicInformation } from "../../shared/dbti";
 import { CollectionError, extractLinks, fetchPublicHtml, normalizePublicUrl, selectKeyPages, type CollectedPage } from "./collectors/website";
-import { enrichWithGemini } from "./gemini";
+import { enrichWithGemini } from "./gemini/index";
 import { attachPublicSearchDetails, searchGooglePublicInformation, unavailableGooglePublicInformation } from "./googlePublicInformation";
 
 export class AnalysisInputError extends Error {

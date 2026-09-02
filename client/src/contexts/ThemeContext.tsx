@@ -21,8 +21,18 @@ export function ThemeProvider({
   defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
+  const hasDevelopmentThemeOverride =
+    switchable &&
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    ["light", "dark"].includes(new URLSearchParams(window.location.search).get("theme") ?? "");
+
   const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
+      const requested = import.meta.env.DEV
+        ? new URLSearchParams(window.location.search).get("theme")
+        : null;
+      if (requested === "light" || requested === "dark") return requested;
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
     }
@@ -37,10 +47,10 @@ export function ThemeProvider({
       root.classList.remove("dark");
     }
 
-    if (switchable) {
+    if (switchable && !hasDevelopmentThemeOverride) {
       localStorage.setItem("theme", theme);
     }
-  }, [theme, switchable]);
+  }, [theme, switchable, hasDevelopmentThemeOverride]);
 
   const toggleTheme = switchable
     ? () => {

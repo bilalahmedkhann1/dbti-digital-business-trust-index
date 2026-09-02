@@ -34,64 +34,100 @@
   --color-chart-5: var(--chart-5);
 }
 
-:root, .dark {
+:root {
   --radius: 0.65rem;
-  --background: #1C1C1E;
-  --foreground: #FFFFFF;
-  --card: #1C1C1E;
-  --card-foreground: #FFFFFF;
-  --popover: #1C1C1E;
-  --popover-foreground: #FFFFFF;
-  --primary: #007AFF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #5856D6;
-  --secondary-foreground: #FFFFFF;
-  --muted: #1C1C1E;
-  --muted-foreground: #FFFFFF;
-  --accent: #34C759;
-  --accent-foreground: #1C1C1E;
-  --destructive: #5856D6;
-  --destructive-foreground: #FFFFFF;
-  --border: #5856D6;
-  --input: #5856D6;
-  --ring: #007AFF;
-  --chart-1: #007AFF;
-  --chart-2: #5856D6;
-  --chart-3: #34C759;
-  --chart-4: #FFFFFF;
-  --chart-5: #007AFF;
+  --background: #EDEBDE;
+  --foreground: #1B1716;
+  --card: #EDEBDE;
+  --card-foreground: #1B1716;
+  --popover: #EDEBDE;
+  --popover-foreground: #1B1716;
+  --primary: #630102;
+  --primary-foreground: #EDEBDE;
+  --secondary: #810100;
+  --secondary-foreground: #EDEBDE;
+  --muted: #EDEBDE;
+  --muted-foreground: #630102;
+  --accent: #810100;
+  --accent-foreground: #EDEBDE;
+  --destructive: #810100;
+  --destructive-foreground: #EDEBDE;
+  --border: #630102;
+  --input: #630102;
+  --ring: #810100;
+  --chart-1: #630102;
+  --chart-2: #810100;
+  --chart-3: #1B1716;
+  --chart-4: #EDEBDE;
+  --chart-5: #630102;
+  --surface-strong: #EDEBDE;
+  --theme-toggle-surface: #1B1716;
+  --theme-toggle-foreground: #EDEBDE;
+  --theme-toggle-border: #630102;
+  --theme-toggle-hover: #810100;
+}
+
+.dark {
+  --background: #1B1716;
+  --foreground: #EDEBDE;
+  --card: #1B1716;
+  --card-foreground: #EDEBDE;
+  --popover: #1B1716;
+  --popover-foreground: #EDEBDE;
+  --primary: #810100;
+  --primary-foreground: #EDEBDE;
+  --secondary: #630102;
+  --secondary-foreground: #EDEBDE;
+  --muted: #1B1716;
+  --muted-foreground: #EDEBDE;
+  --accent: #810100;
+  --accent-foreground: #EDEBDE;
+  --destructive: #810100;
+  --destructive-foreground: #EDEBDE;
+  --border: #630102;
+  --input: #630102;
+  --ring: #810100;
+  --chart-1: #810100;
+  --chart-2: #630102;
+  --chart-3: #EDEBDE;
+  --chart-4: #1B1716;
+  --chart-5: #810100;
+  --surface-strong: #EDEBDE;
+  --theme-toggle-surface: #EDEBDE;
+  --theme-toggle-foreground: #1B1716;
+  --theme-toggle-border: #810100;
+  --theme-toggle-hover: #630102;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  html { background: #1C1C1E; }
+  html { background: var(--background); }
   body { @apply bg-background text-foreground antialiased; font-family: Arial, Helvetica, sans-serif; }
   button, a, input, textarea, summary { -webkit-tap-highlight-color: transparent; }
   button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="button"]:not(:disabled), [type="submit"]:not(:disabled), [type="reset"]:not(:disabled), a[href], select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) { @apply cursor-pointer; }
 }
 
 @layer components {
-  .data-label { @apply text-xs tracking-[0.14em] uppercase; color: #FFFFFF; opacity: 0.68; }
-  .data-value { @apply mt-2 text-sm leading-6 break-words; color: #FFFFFF; }
+  .data-label { @apply text-xs tracking-[0.14em] uppercase; color: var(--muted-foreground); opacity: 0.78; }
+  .data-value { @apply mt-2 text-sm leading-6 break-words; color: var(--foreground); }
   .link-value { @apply underline underline-offset-4; }
-  .link-value:hover { color: #34C759; }
+  .link-value:hover { color: var(--accent); }
   .container { width: 100%; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
   .flex { min-height: 0; min-width: 0; }
   @media (min-width: 640px) { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
   @media (min-width: 1024px) { .container { padding-left: 2rem; padding-right: 2rem; max-width: 1280px; } }
 }
 
-/* Remap the existing DBTI arbitrary color utilities to the supplied palette. */
-.bg-\[\#0B0B0B\] { background-color: #1C1C1E !important; }
-.bg-\[\#111111\], .bg-\[\#171717\] { background-color: #1C1C1E !important; }
-.bg-\[\#F5F5F5\] { background-color: #FFFFFF !important; }
-.bg-\[\#262626\] { background-color: #5856D6 !important; }
-.text-\[\#0B0B0B\] { color: #1C1C1E !important; }
-.text-\[\#F5F5F5\] { color: #FFFFFF !important; }
-.text-\[\#A1A1A1\] { color: #FFFFFF !important; opacity: 0.7; }
-.border-\[\#262626\] { border-color: #5856D6 !important; }
-.border-\[\#F5F5F5\] { border-color: #FFFFFF !important; }
-.hover\:bg-\[\#171717\]:hover, .hover\:bg-\[\#262626\]:hover, .hover\:bg-\[\#A1A1A1\]:hover { background-color: #007AFF !important; }
-.hover\:text-\[\#F5F5F5\]:hover { color: #FFFFFF !important; }
-.focus-visible\:ring-\[\#F5F5F5\]:focus-visible { --tw-ring-color: #007AFF !important; }
-.focus-visible\:ring-offset-\[\#0B0B0B\]:focus-visible { --tw-ring-offset-color: #1C1C1E !important; }
+/* Remap the existing DBTI arbitrary utilities through the active theme tokens. */
+.bg-\[\#0B0B0B\], .bg-\[\#111111\], .bg-\[\#171717\] { background-color: var(--background) !important; }
+.bg-\[\#F5F5F5\], .bg-\[\#FFFFFF\] { background-color: var(--surface-strong) !important; }
+.bg-\[\#262626\] { background-color: var(--secondary) !important; }
+.text-\[\#0B0B0B\] { color: var(--foreground) !important; }
+.text-\[\#F5F5F5\] { color: var(--foreground) !important; }
+.text-\[\#A1A1A1\] { color: var(--muted-foreground) !important; opacity: 0.84; }
+.border-\[\#262626\] { border-color: var(--border) !important; }
+.border-\[\#F5F5F5\] { border-color: var(--foreground) !important; }
+.hover\:bg-\[\#171717\]:hover, .hover\:bg-\[\#262626\]:hover, .hover\:bg-\[\#A1A1A1\]:hover { background-color: var(--primary) !important; }
+.hover\:text-\[\#F5F5F5\]:hover { color: var(--primary-foreground) !important; }
+.focus-visible\:ring-\[\#F5F5F5\]:focus-visible { --tw-ring-color: var(--ring) !important; }
+.focus-visible\:ring-offset-\[\#0B0B0B\]:focus-visible { --tw-ring-offset-color: var(--background) !important; }
