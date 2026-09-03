@@ -33,8 +33,18 @@ describe("DBTI refreshed palette and responsive layout contracts", () => {
     const home = await readFile(resolve(clientPath, "pages/Home.tsx"), "utf8");
     expect(home).toContain("w-full max-w-2xl");
     expect(home).toContain("px-5 sm:px-8");
-    expect(home).toContain("sm:text-6xl");
-    expect(home).toContain("!bg-[#FFFFFF]");
+    expect(home).toContain("sm:text-7xl");
+    expect(home).toContain("dbti-search");
+    expect(home).toContain("placeholder:text-[var(--surface-foreground)]");
+  });
+
+  it("keeps every user-facing analysis surface on the supplied palette", async () => {
+    const files = ["components/DBTIResults.tsx", "components/AnalysisProgress.tsx", "components/DBTIAssistant.tsx", "../index.html"];
+    const legacyColors = ["#007AFF", "#5856D6", "#34C759", "#1C1C1E", "#0B0B0B", "#111111", "#171717", "#262626", "#F5F5F5", "#A1A1A1"];
+    for (const file of files) {
+      const content = await readFile(resolve(clientPath, file), "utf8");
+      legacyColors.forEach((color) => expect(content, `${file} still contains ${color}`).not.toContain(color));
+    }
   });
 
   it("uses Cotton as the initial light theme and Noir Black as the dark theme", async () => {

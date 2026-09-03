@@ -87,3 +87,18 @@
 - [x] Visually verify the dark theme, floating toggle, readable logo, and mobile layout.
 - [x] Save a new checkpoint after verified light/dark theme changes.
 - [x] Fix the scan orchestration runtime import error for the DBTI intelligence adapter and revalidate the dev server.
+- [x] Refresh the DBTI UI with a more creative visual composition while preserving all existing features.
+- [x] Reapply and verify the supplied Cotton, Cherry Red, Maroon, and Noir Black palette across the refreshed UI.
+- [x] Fix dark-theme contrast for the Cotton search surface and its placeholder/icon.
+- [x] Update the stale homepage palette contract assertions for the creative UI refresh.
+- [x] Validate responsive presentation, theme toggle behavior, tests, type checks, and production build after the UI refresh.
+- [x] Apply the creative refresh and supplied palette consistently to the results dashboard and metadata.
+- [x] Expand palette-contract coverage to reject legacy user-facing colors in results UI and metadata.
+- [x] Re-run responsive visual checks, tests, type checks, and production build after the full-surface refresh.
+- [x] Visually verify refreshed results states on desktop and mobile in both themes, including charts, evidence cards, assistant, and recovery notices.
+- [x] Record post-refresh results visual checks and rerun validation if fixes are required.
+- [x] Add development-only protected and assisted result preview variants for visual verification.
+- [x] Add development-only assistant panel preview state for visual verification.
+- [x] Visually verify protected, assisted, and floating-assistant states on desktop and mobile in both themes.
+- [x] Update the visual verification record and rerun the final validation suite.
+- [ ] Save a checkpoint for the creative UI refresh.

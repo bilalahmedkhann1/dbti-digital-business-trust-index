@@ -10,7 +10,7 @@ type DBTIAssistantProps = {
 };
 
 export function DBTIAssistant({ result }: DBTIAssistantProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => import.meta.env.DEV && new URLSearchParams(window.location.search).has("preview_assistant"));
   const [messages, setMessages] = useState<Message[]>([]);
   const hasVerifiedEvidence = result.evidence.some((item) => item.status === "VERIFIED_PASS" || item.status === "VERIFIED_FAIL" || item.status === "PARTIAL");
   const assistant = trpc.ai.assist.useMutation({
@@ -30,19 +30,19 @@ export function DBTIAssistant({ result }: DBTIAssistantProps) {
   return (
     <div className="fixed bottom-5 right-5 z-30">
       {open ? (
-        <aside className="mb-3 w-[min(400px,calc(100vw-2.5rem))] overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-[0_18px_50px_rgba(11,11,11,0.82)]" aria-label="DBTI Assistant">
-          <div className="flex items-center justify-between border-b border-[#262626] px-4 py-3">
+        <aside className="mb-3 w-[min(400px,calc(100vw-2.5rem))] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[0_18px_50px_rgba(11,11,11,0.82)]" aria-label="DBTI Assistant">
+          <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-[#F5F5F5]">DBTI Assistant</p>
-              <p className="mt-0.5 text-xs text-[#A1A1A1]">{result.aiAvailable ? "Grounded in this scan's public evidence" : result.aiStatus === "QUOTA_EXCEEDED" ? "Gemini quota is currently exhausted" : "Only grounded responses will be shown"}</p>
+              <p className="text-sm font-medium text-[var(--foreground)]">DBTI Assistant</p>
+              <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{result.aiAvailable ? "Grounded in this scan's public evidence" : result.aiStatus === "QUOTA_EXCEEDED" ? "Gemini quota is currently exhausted" : "Only grounded responses will be shown"}</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close DBTI Assistant" className="text-[#A1A1A1] hover:bg-[#171717] hover:text-[#F5F5F5]">
+            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close DBTI Assistant" className="text-[var(--muted-foreground)] hover:bg-[var(--background)] hover:text-[var(--foreground)]">
               <X className="size-4" />
             </Button>
           </div>
           <AIChatBox
             height="430px"
-            className="rounded-none border-0 bg-[#111111] shadow-none"
+            className="rounded-none border-0 bg-[var(--card)] shadow-none"
             messages={messages}
             onSendMessage={sendMessage}
             isLoading={assistant.isPending}
@@ -54,7 +54,7 @@ export function DBTIAssistant({ result }: DBTIAssistantProps) {
       ) : null}
       <button
         type="button"
-        className="group flex h-11 items-center gap-2 rounded-full border border-[#262626] bg-[#F5F5F5] px-4 text-sm font-medium text-[#0B0B0B] transition duration-150 hover:bg-[#A1A1A1] active:scale-[0.97]"
+        className="group flex h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--foreground)] px-4 text-sm font-medium text-[var(--surface-foreground)] transition duration-150 hover:bg-[var(--muted-foreground)] active:scale-[0.97]"
         onClick={() => setOpen(true)}
         aria-label="Open DBTI Assistant"
       >

@@ -1,0 +1,13 @@
+# DBTI Creative UI Refresh Verification
+
+The refreshed landing page was visually checked at the managed desktop preview in both the default route and development-only dark query state. The composition now uses a layered editorial layout with a grid texture, palette-aware radial accents, a sticky translucent navigation bar, an oversized evidence-led headline, a rounded search control, and a protocol card describing the score boundary. The screenshot confirmed readable Cotton text on Noir surfaces, Cherry Red/Maroon accents, visible navigation, readable logo, and the floating theme control. Existing scan and assisted-evidence logic remains in the same page flow.
+
+Mobile verification remains part of the final validation pass.
+
+The contrast fix was rechecked at 390×844 in both light and dark query states. The Cotton search surface now keeps its Noir text, magnifier, and placeholder readable in dark mode, while the Cherry Red action button, toggle, navigation, grid texture, and editorial content remain legible and unclipped on mobile.
+
+The final desktop preview was checked in both light and dark states after the full-surface refresh. Light mode presents the Cotton canvas with Noir typography and Cherry/Maroon emphasis; dark mode presents Noir Black with Cotton typography and the same accents. The navigation, protocol card, search input, circular action control, orbital decoration, grid texture, and floating theme toggle remain readable and aligned.
+
+Post-refresh results verification completed using the development-only preview state. Desktop and narrow mobile captures were reviewed in both themes. The report header, public-information evidence, score hero, factor breakdown, charts, strengths, weaknesses, recommendations, and assistant explanation remain legible and structurally composed. Mobile sections stack without horizontal overflow; dark mode preserves Cotton text on Noir surfaces and the score/chart hierarchy remains readable. The floating assistant is intentionally omitted from full-page capture chrome by the preview harness, but its fixed placement remains covered by existing interaction tests.
+
+Protected and assisted-evidence preview states were visually checked on desktop and mobile in both light and dark themes with the assistant panel open. The protected state clearly communicates unavailable first-party evidence, public-search-only provenance, and no calculated score. The assisted state clearly communicates user-provided evidence and the limited scoring basis. The floating assistant panel remains readable, bounded to the viewport, and usable at the narrow mobile width; its Cotton/Noir surfaces, Cherry/Maroon controls, close action, prompt buttons, input, and send control maintain contrast in both themes.

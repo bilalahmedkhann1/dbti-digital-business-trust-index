@@ -61,6 +61,7 @@
   --chart-4: #EDEBDE;
   --chart-5: #630102;
   --surface-strong: #EDEBDE;
+  --surface-foreground: #1B1716;
   --theme-toggle-surface: #1B1716;
   --theme-toggle-foreground: #EDEBDE;
   --theme-toggle-border: #630102;
@@ -93,6 +94,7 @@
   --chart-4: #1B1716;
   --chart-5: #810100;
   --surface-strong: #EDEBDE;
+  --surface-foreground: #1B1716;
   --theme-toggle-surface: #EDEBDE;
   --theme-toggle-foreground: #1B1716;
   --theme-toggle-border: #810100;
@@ -131,3 +133,116 @@
 .hover\:text-\[\#F5F5F5\]:hover { color: var(--primary-foreground) !important; }
 .focus-visible\:ring-\[\#F5F5F5\]:focus-visible { --tw-ring-color: var(--ring) !important; }
 .focus-visible\:ring-offset-\[\#0B0B0B\]:focus-visible { --tw-ring-offset-color: var(--background) !important; }
+
+@layer components {
+  .dbti-shell {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 28rem),
+      radial-gradient(circle at 88% 30%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 24rem),
+      var(--background);
+  }
+  .dbti-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.34;
+    background-image: linear-gradient(color-mix(in srgb, var(--foreground) 10%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--foreground) 10%, transparent) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(to bottom, black, transparent 78%);
+  }
+  .dbti-orbit {
+    position: absolute;
+    width: 34rem;
+    height: 34rem;
+    right: -16rem;
+    top: 7rem;
+    border: 1px solid color-mix(in srgb, var(--secondary) 35%, transparent);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .dbti-orbit::after {
+    content: "";
+    position: absolute;
+    inset: 3.5rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+    border-radius: inherit;
+  }
+  .dbti-nav {
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+    background: color-mix(in srgb, var(--background) 78%, transparent);
+    backdrop-filter: blur(18px);
+  }
+  .dbti-hero-card {
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+    background: color-mix(in srgb, var(--background) 78%, transparent);
+    box-shadow: 0 24px 80px color-mix(in srgb, var(--foreground) 13%, transparent);
+    backdrop-filter: blur(18px);
+  }
+  .dbti-hero-card::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    top: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--secondary), var(--primary), transparent);
+  }
+  .dbti-search {
+    border-color: var(--primary) !important;
+    background: var(--surface-strong) !important;
+    box-shadow: 0 20px 55px color-mix(in srgb, var(--foreground) 20%, transparent), 0 0 0 6px color-mix(in srgb, var(--primary) 8%, transparent);
+  }
+  .dbti-mini-card {
+    border: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent);
+    background: color-mix(in srgb, var(--card) 82%, transparent);
+  }
+  .dbti-result-header {
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--card) 88%, transparent), color-mix(in srgb, var(--secondary) 10%, var(--card)));
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+  .dbti-result-header::after {
+    content: "";
+    position: absolute;
+    right: 1.25rem;
+    top: 1.25rem;
+    width: 4rem;
+    height: 4rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 42%, transparent);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .dbti-score-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent);
+    background: radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 18rem), var(--card);
+  }
+  .dbti-score-hero::before {
+    content: "SCORE / 1000";
+    position: absolute;
+    right: 1.25rem;
+    top: 1rem;
+    color: var(--muted-foreground);
+    font-size: 0.625rem;
+    letter-spacing: 0.18em;
+  }
+  .dbti-result-card {
+    border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    box-shadow: 0 16px 42px color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+  .dbti-accent-text { color: var(--primary); }
+  .dark .dbti-accent-text { color: var(--foreground); }
+  @media (max-width: 640px) {
+    .dbti-orbit { width: 23rem; height: 23rem; right: -14rem; top: 8rem; }
+    .dbti-shell::before { background-size: 52px 52px; }
+  }
+}
