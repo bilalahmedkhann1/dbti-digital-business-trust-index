@@ -101,4 +101,4 @@
 - [x] Add development-only assistant panel preview state for visual verification.
 - [x] Visually verify protected, assisted, and floating-assistant states on desktop and mobile in both themes.
 - [x] Update the visual verification record and rerun the final validation suite.
-- [ ] Save a checkpoint for the creative UI refresh.
+- [x] Save a checkpoint for the creative UI refresh.
