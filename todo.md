@@ -109,4 +109,4 @@
 - [x] Record the public-findings UI visual verification results and rerun validation if any fixes are needed.
 - [x] Validate the refreshed visuals and public-findings UI on desktop/mobile and in both themes.
 - [x] Run the final test, type-check, and production-build suite for this update.
-- [ ] Save a checkpoint for the public-findings and visual refresh.
+- [x] Save a checkpoint for the public-findings and visual refresh.
