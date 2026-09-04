@@ -102,3 +102,11 @@
 - [x] Visually verify protected, assisted, and floating-assistant states on desktop and mobile in both themes.
 - [x] Update the visual verification record and rerun the final validation suite.
 - [x] Save a checkpoint for the creative UI refresh.
+- [x] Verify live public-web findings, citations, provider status, and non-scoring boundary with a real scan.
+- [x] Create and integrate palette-consistent decorative visual illustrations without changing scan behavior.
+- [x] Visually verify the public-findings/results UI on desktop in both light and dark themes, including citations, provider/status messaging, and non-scoring boundary text.
+- [x] Visually verify the public-findings/results UI on mobile in both light and dark themes, including citation readability and layout stability.
+- [x] Record the public-findings UI visual verification results and rerun validation if any fixes are needed.
+- [x] Validate the refreshed visuals and public-findings UI on desktop/mobile and in both themes.
+- [x] Run the final test, type-check, and production-build suite for this update.
+- [ ] Save a checkpoint for the public-findings and visual refresh.

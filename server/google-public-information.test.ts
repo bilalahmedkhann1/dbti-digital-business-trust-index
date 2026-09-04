@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { buildPublicSearchDetails, parseFreePublicSearchResults } from "./lib/googlePublicInformation";
+import { buildPublicSearchDetails, parseBingRssPublicSearchResults, parseFreePublicSearchResults } from "./lib/googlePublicInformation";
+
+const bingRss = `
+  <rss><channel>
+    <item><title>Wikipedia</title><link>https://www.wikipedia.org/</link><description>Wikipedia is a free online encyclopedia.</description></item>
+    <item><title>Wikipedia Main Page</title><link>https://en.wikipedia.org/wiki/Main_Page</link><description>The free encyclopedia main page.</description></item>
+    <item><title>Unrelated result</title><link>https://unrelated.example/news</link><description>This result must not be included.</description></item>
+  </channel></rss>
+`;
 
 const searchHtml = `
   <div class="result results_links">
@@ -35,6 +43,18 @@ describe("free public-information search", () => {
       { id: "public-search-source-2", title: "Contact Example Company", url: "https://example.com/contact" },
     ]);
     expect(result.citationSupports).toHaveLength(2);
+    expect(result.statusMessage).toContain("non-scoring supplement");
+  });
+
+  it("parses Bing RSS fallback findings with the same-domain citation boundary", () => {
+    const result = parseBingRssPublicSearchResults(bingRss, "wikipedia.org");
+
+    expect(result.status).toBe("AVAILABLE");
+    expect(result.provider).toBe("PUBLIC_WEB_SEARCH");
+    expect(result.citations).toEqual([
+      { id: "public-search-source-1", title: "Wikipedia", url: "https://www.wikipedia.org/" },
+      { id: "public-search-source-2", title: "Wikipedia Main Page", url: "https://en.wikipedia.org/wiki/Main_Page" },
+    ]);
     expect(result.statusMessage).toContain("non-scoring supplement");
   });
 
