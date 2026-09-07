@@ -54,7 +54,7 @@ export function DBTIAssistant({ result }: DBTIAssistantProps) {
       ) : null}
       <button
         type="button"
-        className="group flex h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--foreground)] px-4 text-sm font-medium text-[var(--surface-foreground)] transition duration-150 hover:bg-[var(--muted-foreground)] active:scale-[0.97]"
+        className="group flex h-11 items-center gap-2 rounded-full border border-[var(--assistant-button-border)] bg-[var(--assistant-button-surface)] px-4 text-sm font-medium text-[var(--assistant-button-foreground)] shadow-[0_14px_32px_rgba(27,23,22,0.24)] transition duration-150 hover:bg-[var(--assistant-button-hover)] active:scale-[0.97]"
         onClick={() => setOpen(true)}
         aria-label="Open DBTI Assistant"
       >

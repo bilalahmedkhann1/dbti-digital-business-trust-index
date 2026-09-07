@@ -62,10 +62,14 @@
   --chart-5: #630102;
   --surface-strong: #EDEBDE;
   --surface-foreground: #1B1716;
-  --theme-toggle-surface: #1B1716;
+  --theme-toggle-surface: #630102;
   --theme-toggle-foreground: #EDEBDE;
-  --theme-toggle-border: #630102;
+  --theme-toggle-border: #810100;
   --theme-toggle-hover: #810100;
+  --assistant-button-surface: #630102;
+  --assistant-button-foreground: #EDEBDE;
+  --assistant-button-border: #810100;
+  --assistant-button-hover: #810100;
 }
 
 .dark {
@@ -98,7 +102,11 @@
   --theme-toggle-surface: #EDEBDE;
   --theme-toggle-foreground: #1B1716;
   --theme-toggle-border: #810100;
-  --theme-toggle-hover: #630102;
+  --theme-toggle-hover: #EDEBDE;
+  --assistant-button-surface: #810100;
+  --assistant-button-foreground: #EDEBDE;
+  --assistant-button-border: #630102;
+  --assistant-button-hover: #630102;
 }
 
 @layer base {
@@ -143,6 +151,24 @@
       radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 28rem),
       radial-gradient(circle at 88% 30%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 24rem),
       var(--background);
+  }
+  .dbti-results-shell {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--primary) 7%, var(--background)), transparent 32%),
+      radial-gradient(circle at 82% 7%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 24rem),
+      radial-gradient(circle at 8% 46%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 26rem),
+      var(--background);
+  }
+  .dbti-results-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.2;
+    background-image: linear-gradient(135deg, color-mix(in srgb, var(--foreground) 10%, transparent) 1px, transparent 1px);
+    background-size: 26px 26px;
+    mask-image: linear-gradient(135deg, black, transparent 62%);
   }
   .dbti-shell::before {
     content: "";

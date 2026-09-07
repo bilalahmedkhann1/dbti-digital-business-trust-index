@@ -110,3 +110,8 @@
 - [x] Validate the refreshed visuals and public-findings UI on desktop/mobile and in both themes.
 - [x] Run the final test, type-check, and production-build suite for this update.
 - [x] Save a checkpoint for the public-findings and visual refresh.
+- [x] Redesign the scan-results page background with a more creative but readable palette-consistent treatment.
+- [x] Correct the DBTI Assistant button colors in light and dark themes.
+- [x] Correct the light-mode theme button colors and focus/hover contrast.
+- [x] Verify the results page and controls responsively, then run tests, checks, and build.
+- [ ] Save a checkpoint for the scan-results refinement.

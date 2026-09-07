@@ -174,7 +174,7 @@ export function DBTIResults({ result, onNewScan }: { result: DBTIResult; onNewSc
   const factorData = result.factors.map((factor) => ({ name: factor.name.replace(" ", "\n"), score: factor.score, contribution: factor.weightedContribution }));
 
   return (
-    <main className="dbti-shell pb-32" id="results">
+    <main className="dbti-shell dbti-results-shell pb-32" id="results">
       <div className="dbti-result-header flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
         <div>
           <p className="text-xs tracking-[0.16em] text-[var(--muted-foreground)]">ANALYSIS COMPLETE</p>

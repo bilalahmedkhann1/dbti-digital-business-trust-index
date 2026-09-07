@@ -58,7 +58,7 @@ describe("DBTI refreshed palette and responsive layout contracts", () => {
     expect(app).toContain('defaultTheme="light" switchable');
     expect(app).toContain("<ThemeToggle />");
     expect(toggle).toContain('aria-label={label}');
-    expect(toggle).toContain("fixed bottom-5 right-5 z-50");
+    expect(toggle).toContain("fixed bottom-20 right-5 z-50");
   });
 
   it("keeps theme toggle controls keyboard-addressable and preference-aware", async () => {

@@ -11,7 +11,7 @@ export default function ThemeToggle() {
   const label = `Switch to ${nextTheme} mode`;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-20 right-5 z-50">
       <Button
         type="button"
         variant="outline"
@@ -20,7 +20,7 @@ export default function ThemeToggle() {
         aria-label={label}
         aria-pressed={theme === "dark"}
         title={label}
-        className="size-12 rounded-full border-[var(--theme-toggle-border)] bg-[var(--theme-toggle-surface)] text-[var(--theme-toggle-foreground)] shadow-[0_14px_32px_rgba(27,23,22,0.22)] backdrop-blur transition-transform hover:bg-[var(--theme-toggle-hover)] hover:text-[var(--theme-toggle-foreground)] active:scale-95"
+        className="size-12 rounded-full border-[var(--theme-toggle-border)] !bg-[var(--theme-toggle-surface)] !text-[var(--theme-toggle-foreground)] shadow-[0_14px_32px_rgba(27,23,22,0.22)] backdrop-blur transition-[background-color,color,transform,box-shadow] hover:!bg-[var(--theme-toggle-hover)] hover:!text-[var(--theme-toggle-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] active:scale-95"
       >
         {theme === "light" ? <Moon className="size-5" aria-hidden="true" /> : <Sun className="size-5" aria-hidden="true" />}
       </Button>
