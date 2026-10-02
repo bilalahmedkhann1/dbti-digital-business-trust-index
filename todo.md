@@ -117,4 +117,4 @@
 - [x] Save a checkpoint for the scan-results refinement.
 - [x] Replace the box-heavy results background with a minimal creative editorial treatment.
 - [x] Verify the minimal results background across desktop/mobile and both themes, then run tests, checks, and build.
-- [ ] Save a checkpoint for the minimal results-background refinement.
+- [x] Save a checkpoint for the minimal results-background refinement.

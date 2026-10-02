@@ -47,6 +47,17 @@ describe("DBTI refreshed palette and responsive layout contracts", () => {
     }
   });
 
+  it("uses a quiet editorial field instead of a box-heavy results texture", async () => {
+    const css = await readFile(resolve(clientPath, "index.css"), "utf8");
+    const resultsBackground = css.slice(css.indexOf("  .dbti-results-shell {"), css.indexOf("  .dbti-shell:not(.dbti-results-shell)::before {"));
+    const resultsContour = css.slice(css.indexOf("  .dbti-results-shell::before {"), css.indexOf("  .dbti-orbit {"));
+    expect(resultsBackground).toContain("radial-gradient(circle at 1px 1px");
+    expect(resultsBackground).toContain("background-size: 26px 26px;");
+    expect(resultsBackground).not.toContain("repeating-linear-gradient");
+    expect(resultsContour).toContain("border-radius: 50%");
+    expect(resultsContour).toContain("transform: rotate(-14deg)");
+  });
+
   it("uses Cotton as the initial light theme and Noir Black as the dark theme", async () => {
     const css = await readFile(resolve(clientPath, "index.css"), "utf8");
     const app = await readFile(resolve(clientPath, "App.tsx"), "utf8");
