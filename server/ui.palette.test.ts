@@ -47,15 +47,15 @@ describe("DBTI refreshed palette and responsive layout contracts", () => {
     }
   });
 
-  it("uses a quiet editorial field instead of a box-heavy results texture", async () => {
+  it("uses the redesigned report composition while preserving results section order", async () => {
     const css = await readFile(resolve(clientPath, "index.css"), "utf8");
-    const resultsBackground = css.slice(css.indexOf("  .dbti-results-shell {"), css.indexOf("  .dbti-shell:not(.dbti-results-shell)::before {"));
-    const resultsContour = css.slice(css.indexOf("  .dbti-results-shell::before {"), css.indexOf("  .dbti-orbit {"));
-    expect(resultsBackground).toContain("radial-gradient(circle at 1px 1px");
-    expect(resultsBackground).toContain("background-size: 26px 26px;");
-    expect(resultsBackground).not.toContain("repeating-linear-gradient");
-    expect(resultsContour).toContain("border-radius: 50%");
-    expect(resultsContour).toContain("transform: rotate(-14deg)");
+    const results = await readFile(resolve(clientPath, "components/DBTIResults.tsx"), "utf8");
+    [".dbti-report-masthead", ".dbti-score-stage", ".dbti-factor-list", ".dbti-chart-grid", ".dbti-assistant-brief"].forEach((selector) => expect(css).toContain(selector));
+    expect(results).toContain("dbti-redesigned-results");
+    const sectionOrder = ["Public Information", "DBTI Score", "Score Breakdown", "Interactive Charts", "Evidence", "Strengths", "Weaknesses", "Recommendations", "DBTI Assistant"];
+    const positions = sectionOrder.map((title) => results.indexOf(`title=\"${title}\"`));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((first, second) => first - second));
   });
 
   it("uses Cotton as the initial light theme and Noir Black as the dark theme", async () => {

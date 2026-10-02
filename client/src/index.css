@@ -286,3 +286,314 @@
     .dbti-shell::before { background-size: 52px 52px; }
   }
 }
+
+@layer components {
+  .dbti-redesigned-results {
+    background:
+      radial-gradient(ellipse 70% 38% at 0% 4%, color-mix(in srgb, var(--secondary) 11%, transparent), transparent 68%),
+      radial-gradient(ellipse 54% 42% at 100% 26%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 70%),
+      linear-gradient(180deg, color-mix(in srgb, var(--background) 97%, var(--primary)), var(--background) 46%, color-mix(in srgb, var(--background) 95%, var(--secondary)));
+  }
+  .dbti-results-frame {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding-top: 1.5rem;
+  }
+  .dbti-report-masthead {
+    position: relative;
+    padding: 1.1rem 0 2rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent);
+  }
+  .dbti-report-topline,
+  .dbti-report-label,
+  .dbti-report-headline > div > a,
+  .dbti-section-number,
+  .dbti-section-description,
+  .dbti-overline,
+  .dbti-chart-head span,
+  .dbti-signal-topline,
+  .dbti-recommendation-priority,
+  .dbti-report-baseline {
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .dbti-report-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--muted-foreground);
+  }
+  .dbti-live-dot {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.45rem;
+    border-radius: 50%;
+    background: var(--secondary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--secondary) 12%, transparent);
+  }
+  .dbti-report-headline {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 3.75rem 0 2.25rem;
+  }
+  .dbti-report-label {
+    margin-bottom: 1rem;
+    color: var(--secondary);
+  }
+  .dbti-report-headline h1 {
+    max-width: 38rem;
+    font-size: clamp(2.6rem, 7vw, 6.8rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.075em;
+    color: var(--foreground);
+  }
+  .dbti-report-headline > div > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 1.25rem;
+    color: var(--muted-foreground);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.85rem;
+  }
+  .dbti-report-headline > div > a:hover { color: var(--foreground); }
+  .dbti-report-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .dbti-view-switch {
+    display: flex;
+    padding: 0.22rem;
+    border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--background) 68%, transparent);
+  }
+  .dbti-view-button {
+    min-height: 2rem;
+    border-radius: 999px;
+    color: var(--muted-foreground);
+    font-size: 0.74rem;
+  }
+  .dbti-view-button:hover { color: var(--foreground); background: transparent; }
+  .dbti-view-button.active { color: var(--primary-foreground); background: var(--secondary); }
+  .dbti-new-scan {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-color: var(--secondary);
+    color: var(--foreground);
+    border-radius: 999px;
+  }
+  .dbti-new-scan:hover { color: var(--secondary-foreground); background: var(--secondary); }
+  .dbti-report-baseline {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--muted-foreground);
+  }
+  .dbti-report-baseline::before {
+    content: "Report / 001";
+    margin-right: 0.25rem;
+  }
+  .dbti-report-baseline span {
+    display: block;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 50%;
+    background: var(--secondary);
+  }
+  .dbti-report-baseline span:nth-child(2) { opacity: 0.55; }
+  .dbti-report-baseline span:nth-child(3) { opacity: 0.25; }
+  .dbti-report-section {
+    display: grid;
+    grid-template-columns: minmax(5rem, 0.22fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    padding: clamp(3rem, 8vw, 6.5rem) 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent);
+  }
+  .dbti-section-head {
+    align-self: start;
+    display: flex;
+    gap: 0.8rem;
+  }
+  .dbti-section-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 2.2rem;
+  }
+  .dbti-section-number { color: var(--secondary); font-weight: 600; }
+  .dbti-section-line { display: block; width: 1px; height: 3.7rem; background: linear-gradient(var(--secondary), transparent); }
+  .dbti-section-copy { min-width: 0; }
+  .dbti-section-title {
+    font-size: clamp(1.5rem, 3vw, 2.7rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+    color: var(--foreground);
+  }
+  .dbti-section-description {
+    max-width: 18rem;
+    margin-top: 1.2rem;
+    color: var(--muted-foreground);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    font-size: 0.78rem;
+  }
+  .dbti-fact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 2.5rem;
+  }
+  .dbti-fact {
+    min-height: 7.4rem;
+    padding: 1.1rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+  }
+  .dbti-fact-description { grid-column: 1 / -1; min-height: auto; }
+  .dbti-fact-note { margin-top: 0.35rem; color: var(--muted-foreground); font-size: 0.72rem; }
+  .dbti-fact .data-value { max-width: 34rem; }
+  .dbti-status-notice {
+    grid-column: 1 / -1;
+    margin-bottom: 1.1rem;
+    padding: 1.1rem 1.2rem;
+    border-left: 3px solid var(--secondary);
+    background: color-mix(in srgb, var(--secondary) 8%, transparent);
+  }
+  .dbti-status-notice p:last-child { max-width: 52rem; margin-top: 0.55rem; color: var(--muted-foreground); font-size: 0.82rem; line-height: 1.7; }
+  .dbti-status-notice a { color: var(--foreground); text-decoration: underline; text-underline-offset: 3px; }
+  .dbti-public-web {
+    grid-column: 1 / -1;
+    margin-top: 2.3rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+    border-radius: 1.4rem;
+    background: color-mix(in srgb, var(--card) 78%, transparent);
+    box-shadow: 0 1.5rem 3rem color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+  .dbti-public-web-head { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+  .dbti-public-web h3 { margin-top: 0.55rem; color: var(--foreground); font-size: 1.55rem; font-weight: 500; letter-spacing: -0.04em; }
+  .dbti-query { margin-top: 0.8rem; color: var(--muted-foreground); font-size: 0.72rem; }
+  .dbti-query span { color: var(--foreground); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .dbti-provider-badge { border-color: var(--secondary); color: var(--foreground); }
+  .dbti-search-link { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 1.35rem; color: var(--primary); font-size: 0.82rem; text-decoration: underline; text-underline-offset: 4px; }
+  .dbti-grounded-summary { max-width: 54rem; margin-top: 1.6rem; color: var(--muted-foreground); font-size: 0.9rem; line-height: 1.9; }
+  .dbti-citation { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+  .dbti-public-boundary, .dbti-public-unavailable, .dbti-user-screenshot p { margin-top: 1.1rem; color: var(--muted-foreground); font-size: 0.75rem; line-height: 1.65; }
+  .dbti-citation-list, .dbti-search-suggestions, .dbti-user-screenshot { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent); }
+  .dbti-citation-list ul { display: grid; gap: 0.55rem; margin-top: 0.8rem; }
+  .dbti-citation-list a { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--foreground); font-size: 0.8rem; }
+  .dbti-citation-list a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+  .dbti-user-screenshot img { width: 100%; max-height: 32rem; margin-top: 0.8rem; border: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent); border-radius: 0.8rem; object-fit: contain; object-position: left; }
+  .dbti-score-stage {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1.3fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+    padding: clamp(1.5rem, 5vw, 3.5rem) 0;
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  }
+  .dbti-score-visual { position: relative; display: grid; place-items: center; width: min(18rem, 60vw); aspect-ratio: 1; margin: 0 auto; }
+  .dbti-score-ring { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from -90deg, var(--secondary) var(--score-angle), color-mix(in srgb, var(--foreground) 10%, transparent) var(--score-angle)); transform: rotate(-8deg); }
+  .dbti-score-ring::before { content: ""; position: absolute; inset: 0.7rem; border-radius: 50%; background: var(--background); }
+  .dbti-score-ring::after { content: ""; position: absolute; inset: 1.2rem; border: 1px solid color-mix(in srgb, var(--secondary) 45%, transparent); border-radius: 50%; }
+  .dbti-score-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; color: var(--foreground); }
+  .dbti-score-center span { font-size: clamp(3.8rem, 8vw, 6.6rem); font-weight: 500; line-height: 0.85; letter-spacing: -0.09em; }
+  .dbti-score-center small { margin-top: 0.9rem; color: var(--muted-foreground); font-size: 0.7rem; }
+  .dbti-score-kicker { display: flex; align-items: center; gap: 0.45rem; color: var(--secondary); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .dbti-score-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-top: 1.7rem; }
+  .dbti-score-stats > div { padding-top: 0.8rem; border-top: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent); }
+  .dbti-score-stats strong { display: block; margin-top: 0.65rem; color: var(--foreground); font-size: clamp(1.1rem, 2.4vw, 1.75rem); font-weight: 500; line-height: 1.1; }
+  .dbti-score-stats > div:nth-child(2) strong { font-size: 1rem; line-height: 1.35; }
+  .dbti-score-stats > div:nth-child(3) strong { font-size: 0.8rem; line-height: 1.5; }
+  .dbti-score-explanation { max-width: 43rem; margin-top: 2rem; color: var(--muted-foreground); font-size: 0.94rem; line-height: 1.85; }
+  .dbti-factor-list { border-top: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent); }
+  .dbti-factor-row { border-bottom: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent); }
+  .dbti-factor-summary { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto 3rem 1rem; align-items: center; gap: 0.8rem; padding: 1.1rem 0; cursor: pointer; }
+  .dbti-factor-summary::-webkit-details-marker { display: none; }
+  .dbti-factor-code { color: var(--secondary); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.68rem; }
+  .dbti-factor-name p { color: var(--foreground); font-size: 0.9rem; font-weight: 500; }
+  .dbti-factor-name span { display: block; margin-top: 0.25rem; overflow: hidden; color: var(--muted-foreground); font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+  .dbti-factor-status { border-color: color-mix(in srgb, var(--foreground) 26%, transparent); color: var(--muted-foreground); font-size: 0.65rem; font-weight: 400; }
+  .dbti-factor-score { color: var(--foreground); font-size: 1.25rem; font-variant-numeric: tabular-nums; text-align: right; }
+  .dbti-factor-chevron { color: var(--muted-foreground); transition: transform 160ms ease-out; }
+  .dbti-factor-row[open] .dbti-factor-chevron { transform: rotate(180deg); }
+  .dbti-factor-detail { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.5rem; padding: 0 0 1.4rem 3.3rem; }
+  .dbti-factor-metrics { display: flex; flex-direction: column; gap: 0.45rem; color: var(--muted-foreground); font-size: 0.7rem; line-height: 1.4; }
+  .dbti-factor-metrics strong { color: var(--foreground); font-weight: 500; }
+  .dbti-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .dbti-chart-panel { height: 340px; padding: 1.1rem; border: 1px solid color-mix(in srgb, var(--foreground) 19%, transparent); border-radius: 1.25rem; background: color-mix(in srgb, var(--card) 72%, transparent); }
+  .dbti-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .dbti-chart-head span { color: var(--muted-foreground); font-size: 0.6rem; }
+  .dbti-evidence-ledger { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+  .dbti-evidence-row { padding: 1rem; border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent); border-radius: 0.85rem; background: color-mix(in srgb, var(--card) 72%, transparent); }
+  .dbti-evidence-row-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+  .dbti-evidence-row-head p { color: var(--foreground); font-size: 0.82rem; }
+  .dbti-evidence-row-head span { color: var(--muted-foreground); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.6rem; }
+  .dbti-evidence-description { margin-top: 0.55rem; color: var(--muted-foreground); font-size: 0.78rem; line-height: 1.65; }
+  .dbti-source-link { display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.65rem; color: var(--primary); font-size: 0.68rem; text-decoration: underline; text-underline-offset: 3px; }
+  .dbti-empty-note { color: var(--muted-foreground); font-size: 0.82rem; line-height: 1.7; }
+  .dbti-signal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  .dbti-signal-card { min-height: 12rem; padding: 1.15rem; border-top: 2px solid var(--secondary); background: color-mix(in srgb, var(--card) 68%, transparent); }
+  .dbti-signal-warning { border-top-color: var(--primary); }
+  .dbti-signal-topline { display: flex; align-items: center; justify-content: space-between; color: var(--muted-foreground); font-size: 0.6rem; }
+  .dbti-signal-card p { margin-top: 3.7rem; color: var(--foreground); font-size: 1.05rem; line-height: 1.15; }
+  .dbti-signal-card > span { display: block; margin-top: 0.7rem; color: var(--muted-foreground); font-size: 0.75rem; line-height: 1.65; }
+  .dbti-ai-status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.3rem; color: var(--muted-foreground); font-size: 0.78rem; line-height: 1.6; }
+  .dbti-ai-status svg { flex: 0 0 auto; color: var(--secondary); }
+  .dbti-recommendation-list { border-top: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent); }
+  .dbti-recommendation { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 1rem; gap: 1rem; padding: 1.45rem 0; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 17%, transparent); }
+  .dbti-recommendation-index { color: var(--secondary); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+  .dbti-recommendation-priority { color: var(--muted-foreground); font-size: 0.62rem; letter-spacing: 0.13em; }
+  .dbti-recommendation h3 { margin-top: 0.55rem; color: var(--foreground); font-size: 1.2rem; font-weight: 500; letter-spacing: -0.025em; }
+  .dbti-recommendation-reason { margin-top: 0.5rem; color: var(--muted-foreground); font-size: 0.8rem; line-height: 1.7; }
+  .dbti-recommendation-action { margin-top: 0.8rem; color: var(--foreground); font-size: 0.82rem; line-height: 1.65; }
+  .dbti-recommendation-arrow { margin-top: 0.1rem; color: var(--secondary); }
+  .dbti-assistant-section { border-bottom: 0; padding-bottom: 2rem; }
+  .dbti-assistant-brief { display: flex; align-items: start; gap: 1rem; padding: 1.35rem; border: 1px solid color-mix(in srgb, var(--secondary) 35%, transparent); border-radius: 1.2rem; background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 10%, transparent), color-mix(in srgb, var(--card) 64%, transparent)); }
+  .dbti-assistant-icon { display: grid; flex: 0 0 auto; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 0.75rem; color: var(--secondary-foreground); background: var(--secondary); }
+  .dbti-assistant-brief p { color: var(--muted-foreground); font-size: 0.83rem; line-height: 1.75; }
+  .dark .dbti-report-label,
+  .dark .dbti-section-number,
+  .dark .dbti-score-kicker,
+  .dark .dbti-recommendation-index { color: var(--foreground); opacity: 0.84; }
+  @media (max-width: 760px) {
+    .dbti-results-frame { width: min(100% - 1.4rem, 42rem); padding-top: 0.9rem; }
+    .dbti-report-headline { display: block; padding: 2.7rem 0 1.7rem; }
+    .dbti-report-actions { justify-content: flex-start; margin-top: 1.6rem; }
+    .dbti-report-topline { font-size: 0.56rem; }
+    .dbti-report-topline > span:last-child { display: none; }
+    .dbti-report-section { display: block; padding: 3.5rem 0; }
+    .dbti-section-head { margin-bottom: 2rem; }
+    .dbti-section-description { max-width: 28rem; margin-top: 0.7rem; }
+    .dbti-fact-grid, .dbti-chart-grid, .dbti-evidence-ledger, .dbti-signal-grid { grid-template-columns: 1fr; }
+    .dbti-fact-description { grid-column: auto; }
+    .dbti-public-web { margin-top: 1.5rem; border-radius: 1rem; }
+    .dbti-public-web-head { display: block; }
+    .dbti-provider-badge { margin-top: 1rem; }
+    .dbti-score-stage { display: block; }
+    .dbti-score-visual { width: min(15rem, 68vw); margin-bottom: 2.5rem; }
+    .dbti-score-stats { grid-template-columns: 1fr 1fr; }
+    .dbti-score-stats > div:nth-child(3) { grid-column: 1 / -1; }
+    .dbti-factor-summary { grid-template-columns: 2rem minmax(0, 1fr) 2.2rem 1rem; gap: 0.55rem; }
+    .dbti-factor-status { grid-column: 2; grid-row: 2; justify-self: start; }
+    .dbti-factor-score { grid-column: 3; grid-row: 1 / span 2; }
+    .dbti-factor-chevron { grid-column: 4; grid-row: 1 / span 2; }
+    .dbti-factor-detail { display: block; padding-left: 2.55rem; }
+    .dbti-factor-metrics { flex-direction: row; flex-wrap: wrap; margin-bottom: 1rem; }
+    .dbti-chart-panel { height: 300px; }
+    .dbti-signal-card { min-height: 10rem; }
+  }
+}
